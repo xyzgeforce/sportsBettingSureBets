@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import smtplib
 import time
+#strtime_file = time.time()
 import timeit
 from collections import defaultdict
 from smtplib import SMTPException
@@ -17,6 +18,7 @@ import itertools
 import sys,os
 #from scraper_api import ScraperAPIClient
 import datetime, unidecode
+import subprocess
 #from googletrans import Translator
 
 # init the Google API translator
@@ -31,6 +33,14 @@ from http_request_randomizer.requests.proxy.requestProxy import RequestProxy
 req_proxy = RequestProxy(log_level=logging.ERROR) #you may get different number of proxy when  you run this at each time
 proxies = req_proxy.get_proxy_list()
 
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+sys.path.append('./')
+
+from metaLeague_data import *
+
 # define global init 'surebet' condition value (note by default any bet will not be a surebet given its > 1.0)
 surebet_factor = 0.0
 #cibstant initialised to False - for determining if they customer's expected odds are retrieved for alert system...
@@ -39,23 +49,14 @@ odd_are_found = False
 #client = ScraperAPIClient('781fa06f6c29968fe2971fa6a90760dc')
 #respondsr = client.get(url = "https://france-pari.fr/")
 #print(result)
-
-#text file woith records of surebets already alerted for:
-
+#text file with records of surebets already alerted for:
 surebets_Done_list_textfile = './sure_bets_placed.txt'
 fp1 = open(surebets_Done_list_textfile, "r")
 
-
 list_mailed_surebets = []
 
-for line in fp1:
-    list_mailed_surebets.append(line)
-
-fp1.close()
 
 def check_is_surebet(*args): #odds_A, odds_B):
-
-    
 
     total_iverse_odds_sum = 0.0
     for odds in args:
@@ -96,12 +97,14 @@ def return_surebet_vals(*argv, stake):  #odds_A, odds_B,stake):
 
     surebetStakes = []
 
+    # !! NoTE : ive added a '100.0' factor into the calculations below to display to the lads in their emails
+
     for i,odds in enumerate(argv):
 
         if odds == 0.0 or surebet_factor == 0.0 :
-            surebetStakes[i]  = stake
+            surebetStakes.append(1)
         else:    
-            surebetStakes[i] = (1/surebet_factor)*(stake/odds)
+            surebetStakes.append((1/surebet_factor)*(1/odds))
             #print('surebetStakes[' + str(i) + '] =  ' + str(surebetStakes[i]))
 
     return surebetStakes
@@ -123,8 +126,15 @@ options.add_argument("user-agent= 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_6
 driver = webdriver.Chrome(options=options, executable_path=DRIVER_PATH, service_args=["--verbose", "--log-path=D:\\qc1.log"])
     
 #remove?as done below for site's direct champ league url!
-headers = {"Connection" : "close"}
-ret = driver.get("https://france-pari.fr/") #,headers = headers)
+
+
+
+# headers = {"Connection" : "close"}
+# ret = driver.get("https://france-pari.fr/") #,headers = headers)
+
+
+
+
 ## Class definitions :
 
 # class ExtractorDataParser:
@@ -188,250 +198,6 @@ ret = driver.get("https://france-pari.fr/") #,headers = headers)
     #             return ""      
 
 
-# Cbet general home page link :
-# 
-cbet_sports_link = "https://cbet.gg/en/sportsbook/prematch"   
-
-
-###  *********************************** CHAMPION'S LEAGUE lINKS *****************************
-#list of website links (most general for football mathces-1st few are for champions league)
-france_pari_champions_league_link =  "https://www.france-pari.fr/competition/6674-parier-sur-ligue-des-champions"
-# d lads dont want this site as it's shite.
-#vbet_champions_league_link        = "https://www.vbet.fr/paris-sportifs?btag=147238_l56803&AFFAGG=#/Soccer/Europe/566/17145852"
-unibet_champions_league_link       = "https://www.unibet.fr/sport/football/ligue-des-champions/ligue-des-champions-matchs"
-zebet_champions_league_link        = "https://www.zebet.fr/fr/competition/6674-ligue_des_champions"
-winimax_champions_league_link      = "https://www.winamax.fr/en/sports-betting/sports/1/800000006"
-
-#passionsports__champions_ligue_link = "" 
-sportsbwin_champs_ligue_link       = "https://sports.bwin.fr/fr/sports/football-4/paris-sportifs/europe-7/ligue-des-champions-0:3"
-
-#betclic_champs_ligue_link         = ""
-#pokerstarsSports_ligue1_link      = ""
-#pasinoBet_ligue1_link             = ""
-
-###  *********************************** premier league  lINKS *****************************
-
-
-
-
-
-
-
-###  *********************************** La Liga  lINKS *****************************
-
-
-
-
-
-
-
-
-###  *********************************** Serie A'   lINKS *****************************
-
-
-
-
-
-
-
-
-###  *********************************** Bundesliga  lINKS *****************************
-
-
-
-
-
-###  *********************************** LIGUE 1  lINKS *****************************
-
-## prematch :
-
-betclic_ligue1_link       = "https://www.betclic.fr/football-s1/ligue-1-uber-eats-c4"
-france_pari_ligue1_link   = "https://www.france-pari.fr/competition/96-parier-sur-ligue-1-uber-eats"
-unibet_ligue1_link        = "https://www.unibet.fr/sport/football/france-foot/ligue-1-ubereats-france"
-zebet_ligue1_link         = "https://www.zebet.fr/en/competition/96-ligue_1_uber_eats"
-winimax_ligue1_link       = "https://www.winamax.fr/en/sports-betting/sports/1/7/4"
-passionsports_ligue1_link = "https://www.enligne.parionssport.fdj.fr/paris-football/france/ligue-1-uber-eats?filtre=22892"
-sportsbwin_ligue1_link    = "https://sports.bwin.fr/fr/sports/football-4/paris-sportifs/france-16/ligue-1-4131"
-cbet_ligue1_link          = "https://cbet.gg/en/sportsbook/prematch#/prematch"
-paris_sportifs_pmu        = "https://paris-sportifs.pmu.fr/pari/competition/169/football/ligue-1-uber-eats"
-
-# live :
-
-
-## most these needf the actual live links inserted !
-# betclic_ligue1_live       = "https://www.betclic.fr/football-s1/ligue-1-uber-eats-c4"
-# france_pari_ligue1_live   = "https://www.france-pari.fr/competition/96-parier-sur-ligue-1-uber-eats"
-# unibet_ligue1_live        = "https://www.unibet.fr/sport/football/france-foot/ligue-1-ubereats-france"
-# zebet_ligue1_live         = "https://www.zebet.fr/en/competition/96-ligue_1_uber_eats"
-winimax_ligue1_live         = "https://www.winamax.fr/en/sports-betting/live"
-
-# passionsports_ligue1_live = "https://www.enligne.parionssport.fdj.fr/paris-football/france/ligue-1-uber-eats?filtre=22892"
-# sportsbwin_ligue1_live    = "https://sports.bwin.fr/fr/sports/football-4/paris-sportifs/france-16/ligue-1-4131"
-# cbet_ligue1_link          = "https://cbet.gg/en/sportsbook/prematch#/prematch"
-# paris_sportifs_pmu_live   = "https://paris-sportifs.pmu.fr/pari/competition/169/football/ligue-1-uber-eats"
-
-
-#betclic_ligue1_link       = ""
-#pokerstarsSports_ligue1_link = ""
-#pasinoBet_ligue1_link        = ""
-
-###  *********************************** EUROPA LEAGUE lINKS *****************************
-#list of website links (most general for football mathces-1st few are for champions league)
-france_pari_europa_league_link      =  "https://www.france-pari.fr/competition/6674-parier-sur-europa-ligue"   #(?? - check this !!)
-# d lads dont want this site as it's shite.
-#vbet_champions_league_link        = "https://www.vbet.fr/paris-sportifs?btag=147238_l56803&AFFAGG=#/Soccer/Europe/566/17145852"
-unibet_europa_league_link           =  "https://www.unibet.fr/sport/football/europa-league/europa-league-matchs"
-zebet_europa_league_link            =  "https://www.zebet.fr/en/competition/6675-europa_league"
-winimax_europa_league_link          =  "https://www.winamax.fr/en/sports-betting/sports/1/800000007"
-passionsports_europa_league_link    = "https://www.enligne.parionssport.fdj.fr/paris-football"
-sportsbwin_europa_league_link       = "https://sports.bwin.fr/fr/sports/football-4/paris-sportifs/europe-7/europa-league-0:5"    
-betclic_europa_league_link          = "https://www.betclic.fr/football-s1/ligue-europa-c3453"
-
-#pokerstarsSports_europa_league_link = ""
-#pasinoBet_europa_league_link        = ""
-
-## name consistent Champ and Europa league team names:
-#England
-manchester_utd   = "manchester united"
-manchester_city  = "manchester city"
-chelsea          = "chelsea"
-liverpool        = "liverpool"
-
-#Espana
-real            = "real madrid"
-barcelona       = "barcelona"
-sevilla         = "sevilla"
-atletico_madrid = "atletico madrid"
-
-#Italia
-juventus     = "juventus"  
-atalanta     = "atalanta"  
-lazio        = "lazio"
-
-#Germany
-bayern_munich    = "bayern munich" 
-dortmund         = "dortmund" 
-munchen_flapjack = "bayern munchengladback"
-leipzig          = "rb leipzig"
-
-#France
-paris_germain    = "paris st germain"
-
-## russia/Ukraine
-shaktar          = "shaktar donetsk"
-dynamo_kiev      = "dynamo kiev"
-krasnodar        = "fc krasnodar"
-
-## Portugal / Greece / Turkey / Holland / Austria / Belgium/ Hungary  Denmark
-porto                = "fc porto"
-olympiakos           = "olympiakos"
-ajax                 = "ajax"
-salzburg             = "rb salzburg"
-club_brugge          = "club brugge"
-
-
-##  LIGUE ! TEAMS 2020/2021
-PSG           =  'paris saint germain'
-Montpellier   =  'montpellier'
-Marseille     =  'marseille'
-Monaco        =  'monaco'
-Lyon          =  'lyon'
-Metz          =  'metz'
-lens          =  'lens'
-lille         =  'lille'
-dijon         =  'dijon'
-Nice          =  'nice'
-Nimes         =  'nimes'
-Rennes        =  'rennes'
-Strasbourg    =  'strasbourg'
-Nantes        =  'nantes'
-Bordeaux      =  'bordeaux'
-Angers        =  'angers'
-Brest         =  'brest'
-Reims         =  'reims'
-Lorient       =  'lorient'
-
-
-## dict for weird french team naming -> standard:
-
-ligue1_teamNamesMap = {'Stade Brestois': 'brest', 'Olympiue Lyonnais':'lyon','Paris Saint-Germain':'psg','Girondins de Bordeaux':'bordeaux','OGC Nice':'nice','Stade Rennais':'rennes','AS Saint-Etienne':'st etienne','Angers SCO':'angers','FC Metz':'metz','RC Strasbourg':'strasbourg'
-                      ,'RC Lens':'lens','AS Monaco':'monaco','Dijon FCO':'dijon','Olympique de Marseille':'marseille','LOSC Lille':'lille','FC Nantes':'nantes','Stade de Reims':'reims'
-                      ,'Nimes Olympique':'nimes','Montpellier HSC':'montpellier','FC Lorient':'lorient'}
-
-All_ligue1_team_list = [PSG, "paris sg" ,"paris saint germaine", "paris st germain","saint etienne", "saint-etienne","st-etienne", Montpellier, Marseille, Monaco, Lyon, Metz, lens, lille, dijon, Nice, Nimes, Rennes, Strasbourg, Nantes, Bordeaux, Angers, Brest, Reims, Lorient]
-
-french_dates_list = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre']
-
-
-comon_TeamNames_mapper ={'stade brestois': 'brest', 'brestois': 'brest', 'olympiue lyonnais':'lyon', 'olympiue lyon':'lyon','paris saint-germain':'psg','paris saint germain':'psg','paris st-germain':'psg','paris st germain':'psg'
-                      ,'paris sg':'psg','paris s g':'psg','psg':'psg','girondins de bordeaux':'bordeaux','girondins bordeaux':'bordeaux','ogc nice':'nice','stade rennais':'rennes', 'rennais':'rennes', 'as saint-etienne':'st etienne', 
-                      'saint etienne':'st etienne','saint-etienne':'st etienne', 'st-etienne':'st etienne','as st-etienne':'st etienne', 'st etienne':'st etienne', 'angers sco':'angers','fc metz':'metz','rc strasbourg':'strasbourg'
-                      ,'rc lens':'lens','racing club de lens':'lens','as monaco':'monaco','dijon fco':'dijon','olympique de marseille':'marseille', 'olympique marseille':'marseille','st etienne':'st etienne',
-                       'losc lille':'lille','fc nantes':'nantes','stade de reims':'reims','nimes olympique':'nimes','montpellier hsc':'montpellier','montpellier':'montpellier','Montpellier':'montpellier','fc lorient':'lorient'
-                       , PSG :  'psg', Montpellier:'montpellier', Marseille: 'marseille', Monaco:'monaco', Lyon: 'lyon', Metz: 'metz', lens: 'lens', lille:'lille', dijon:'dijon',Nice: 'nice',
-                        Nimes:'nimes', Rennes: 'rennes', Strasbourg:'strasbourg', Nantes:  'nantes', Bordeaux:'bordeaux', Angers:  'angers', Brest:   'brest', Reims:   'reims', Lorient: 'lorient','racing strasbourg':'strasbourg'}
-
-#combine list and 'mapper' dict to get ALL poss team names
-#complete_ligue1_teams_list = All_ligue1_team_list.copy()
-#complete_ligue1_teams_list.update(comon_TeamNames_mapper)
-
-# english_to_french_mapper = {}
-# english_to_french_mapper[club_brugge] = 'club bruges'
-# english_to_french_mapper[lokomotiv] = 'lokomotiv_moscou'
-# english_to_french_mapper[zenit_st_peters] = 'zenit saint petersbourg'
-# english_to_french_mapper[barcelona] = 'barcelone'
-# english_to_french_mapper[salzburg] = 'rb salzbourg'
-# english_to_french_mapper[salzbourg] = 'rb salzbourg'
-
-
-#same order as data structures in their list
-websites_champs_league_links = [france_pari_champions_league_link, unibet_champions_league_link, zebet_champions_league_link,winimax_champions_league_link, sportsbwin_champs_ligue_link]  # haS 5 LINKS NOW
-websites_europa_league_links = [france_pari_europa_league_link, unibet_europa_league_link, zebet_europa_league_link,winimax_europa_league_link, sportsbwin_europa_league_link] # 7 links
-websites_ligue1_links        = [france_pari_ligue1_link, unibet_ligue1_link,zebet_ligue1_link, winimax_ligue1_link, betclic_ligue1_link,cbet_ligue1_link, passionsports_ligue1_link, paris_sportifs_pmu] # 7 links m       # betclic_ligue1_link is empty for now
-#sportsbwin_ligue1_link
-
-#passionsports_ligue1_link
-#websites_ligue1_links        = [unibet_ligue1_link] # 7 links m       # betclic_ligue1_link is empty for now
-
-#websites_ligue1_links        = [france_pari_ligue1_link, unibet_ligue1_link,zebet_ligue1_link,paris_sportifs_pmu] # 7 links m       # betclic_ligue1_link is empty for now
-#sportsbwin_ligue1_link
-
-
-reference_champ_league_games_url = str(websites_champs_league_links[0])
-driver.get(reference_champ_league_games_url)
-
-# some vars for parsing the games data - strings.
-#initialize data with todays date - better than empty string
-date_ = '31 mai'
-compettition = 'Ligue des Champions'    
-
-# TODO :rename like actual sites 
-
-# refernce_champ_league_gamesDict = defaultdict(list) # pari-france site
-# #site_unibet_champ_league_gamse = defaultdict(list)
-# sites_zebetchamp_league_gamse   = defaultdict(list)
-# unnibet_champ_league_gamse      = defaultdict(list)
-# winimax_champ_league_gamse      = defaultdict(list)
-# sportsbwin_champ_league_gamse   = {}
-# site7s_champ_league_gamse       = {}
-
-
-full_all_bookies_allLeagues_match_data = defaultdict(list)
-all_split_sites_data = []
-
-#all_srpaed_sites_data = [refernce_champ_league_gamesDict, winimax_champ_league_gamse, sites_zebetchamp_league_gamse, unnibet_champ_league_gamse] #, site5s_champ_league_gamse]
-
-#bookie 'nicknames'
-zebet = 'zebet'
-unibet = 'unibet'
-winimax = 'winamax'
-betclic = 'betclic'
-france_pari = 'france-pari'
-sports_bwin = 'sports.bwin'
-parionbet = 'parion'
-cbet      = 'cbet'
-pmu       = ''
-
 
 def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='barcelone',date='Mercredi 25 Novembre',competition='Ligue des Champions',Bookie1_used='winmax'):
 
@@ -439,7 +205,7 @@ def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='bar
 
     # init. copy data dict.
     all_split_sites_data_copy = {}
-  
+        
     Bookie1_used = Bookie1_used.lower()
     sub_strs_in_key = [competition.lower(),teamA.lower(),teamB.lower()] #,date.lower()]
     # search for game (and competition and date to ensure uniqueness) on ref. site:
@@ -507,7 +273,7 @@ def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='bar
 
     return True
 
-W_1 = 'Home team (1st team name on the betting card) to win'
+W_1 = 'Home team (1st team name on the betting ca rd) to win'
 W_2 = 'Away team (2nd team name on the betting card) to win'
 D   = 'A draw between the team in the 90 minutes'
 #L_1 = 'Home team (1st team name on the betting card) to lose'
@@ -565,15 +331,29 @@ def check_for_sure_bets(*args):
         PROXY_COUNTER += random.randint(1,RAND_PROXY_JUMP)
         k += 1
         
+        #endtime_file = time.time()
+        #print('time to get to parsing was = ' + str(endtime_file - strtime_file))
         #print('Click on the "esc" key @ any time to terminate this program and can then restart again any time you wish :) ......')
         # waitr a delay time to refresh sites parsings....
         start_parse = time.time() 
+
+        #subprocess.run("python split_parsing.py",shell=True)
+
+        #process = subprocess.Popen('r"/c/ProgramData/Anaconda3/python"  r"/c/Users/MaaD/Desktop/pythonCode/sportsBettingProjects/split_parsing_1.py"', 
+        #    shell=True)
+            #, 
+            #stdout=subprocess.PIPE, 
+            #stderr=subprocess.PIPE )
+
         if parseSites(driver): #all_srpaed_sites_data):
             end_parse = time.time() 
             print('Time to do parsing was = ' + str(end_parse - start_parse))
             total_time_parsing += (end_parse - start_parse) 
             pass
         else:
+            end_parse = time.time() 
+            print('Time to do parsing was = ' + str(end_parse - start_parse))
+            total_time_parsing += (end_parse - start_parse)
             print("Error i parsing function...retring... But needs diagnostics and/or a fix ! ...")
             pass
 
@@ -602,19 +382,36 @@ def check_for_sure_bets(*args):
             # print(' ############################################################################### Current Dict FINISHED  ###############################################################################')
             # #print('new data dict. has been updated ...! :)')
 
+    ## print average timers  parsings of each sites:
+        print('AVerage time to do cbet parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_cbet/globCounter))
+
+        print('AVerage time to do unibet parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_unibet/globCounter))
+
+        print('AVerage time to do france_pari parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_france_pari/globCounter))
+
+        print('AVerage time to do winimax parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_winimax/globCounter))
+
+        print('AVerage time to do betclic parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_betclic/globCounter))
+
+        print('AVerage time to do parion parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_parionbet/globCounter))
+
+        print('AVerage time to do pmu parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_pmu/globCounter))
+
+
+
         #local copy in infinite loop to check if its changed or not - then dont need to redo sure bets checks if not
         all_split_sites_data_copy = all_split_sites_data
-
         wait_time = random.randint(1,2)
         time.sleep(wait_time)   
         if len(all_split_sites_data) < 3 :
             print('*************************** Error - less than three bookies scrapped for games here ..., try again -- if this error persists raise a bug ******************************')
             #return False
+            
             continue
 
-        if (globCounter % 5) == 0:
-            print('AVerage time to do parsings was = ' + str(total_time_parsing/globCounter)) 
-            print('number of surebets found so far is = ' + str(sure_bet_counter))    
+    #    /\ if (globCounter % 5) == 0:
+        print('AVerage time to do parsings was = ' + str(total_time_parsing/globCounter)) 
+        print('number of surebets found so far is = ' + str(sure_bet_counter))    
 
         if not dont_recimpute_surebets :
             start_surebet_timer = time.time()
@@ -697,13 +494,16 @@ def check_for_sure_bets(*args):
                         key_bookkie2 = 'void2'
                         key_bookkie3 = 'void3'
                         truth_list_subStrKeysDict2 = [matching_keys2_list.append(key2) for key2,val in subsetList[1].items() if (unique_math_identifiers[0] in key2 and unique_math_identifiers[1] in key2 and unique_math_identifiers[2] in key2)]
+                        
+                        #if truth_list_subStrKeysDict2:
+                        #    print(truth_list_subStrKeysDict2[0])
                         if len(truth_list_subStrKeysDict2) > 0:
                             key_bookkie2 = matching_keys2_list[0] #truth_list_subStrKeysDict2[0]
                         #else:
                         #    GAN = 'nah' 
 
                         truth_list_subStrKeysDict3 = [matching_keys3_list.append(key3) for key3,val in subsetList[2].items() if (unique_math_identifiers[0] in key3 and unique_math_identifiers[1] in key3 and unique_math_identifiers[2] in key3)]
-                        if len(truth_list_subStrKeysDict3) > 0:
+                        if len(truth_list_subStrKeysDict3) > 0 :
                             key_bookkie3 = matching_keys3_list[0] # truth_list_subStrKeysDict3[0]   
                         #else:
                         #    GAN = 'nah'    
@@ -717,7 +517,9 @@ def check_for_sure_bets(*args):
                             checxking_surebet_counts += 1
                             #print('Checking for surebets -- idir teams : ' + str(teamA_1) +  '  and  ' + str(teamB_1)   + '.... checking_surebet_counts =  ' + str(checxking_surebet_counts)) 
                             #print('Bookies in order of odds are : ' + bookie_1  + bookie_2 + bookie_3 + '\n')
-
+                            
+                            #test for mail with %s -- this ensures a surebet is found !;)
+                            #subsetList[0][key][0],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][2] = 1.1,7.5,25     #8.0, 2.0, 4.0
 
                             #print('Odds youre checking are  =  ' + str(W_1) + ' = ' + str(subsetList[0][key][0]))
                             #print('   -- and  --  ' + str(D) + ' = ' + str(subsetList[1][key_bookkie2][1]))
@@ -739,7 +541,26 @@ def check_for_sure_bets(*args):
                                 print('Odds comboo is')
                                 print(W_1)
                                 print(D)
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1)
+
+                                stake = 100.0
+                                ## calc. % profit for the lads:
+   
+                                #profit = 1.0 - (1/subsetList[0][key][0] + 1/subsetList[1][key_bookkie2][1] + 1/subsetList[2][key_bookkie3][2]) 
+
+                                #184 45238262
+                                
+                                get_surebet_factor(subsetList[0][key][0],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][2])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][0],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][2],stake = stake)
+
+                             
+                                avg_profit = round(stake*(-subsetList[0][key][0]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][1]*proportionsABC_list[1] + subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+                                #profit_2 = round(stake*( subsetList[0][key][0]*proportionsABC_list[0]  - subsetList[1][key_bookkie2][1]*proportionsABC_list[1] + subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+                                #profit_3 = round(stake*( subsetList[0][key][0]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][1]*proportionsABC_list[1] - subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+#
+                                #avg_profit = round((1/3)*(profit_1 + profit_2 + profit_3),3)
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit,subsetList[0][key][0],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][2])
                                 #print('Bet (sure)  kombo just found has the wining home teams odds at ' + str(subsetList[0][key][0]) + 'in the bookie ->' + bookie_1 + ' the draw at odds = '  + str(subsetList[1][key_bookkie2][1]) + ' in bookie ' + str(bookie_2) + ' and finally the other teams win odds @ ' + str(subsetList[2][key_bookkie3][2]) + str(bookie_3) + '  \n')
                                 # these continues will avoid the sitch of 'same' surebet (swapoed one) being mailed out
                                 #return_surebet_vals([subsetList[0][key][0],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][2]],1000)
@@ -752,7 +573,21 @@ def check_for_sure_bets(*args):
 
                                 sure_bet_counter += 1
                                 print('*****************************************************************************  SURE BET FOUND !  :)   *****************************************************************************') 
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2, bookie_3,W_1,W_2,teamA_1, teamB_1, date,competition_1)
+
+                                ## calc. % profit for the lads:
+                                stake = 100.0
+                                
+                                get_surebet_factor(subsetList[0][key][0],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][1])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][0],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][1],stake = stake)
+
+                                avg_profit = round(stake*(-subsetList[0][key][0]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][2]*proportionsABC_list[1]+ subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+                                #rofit_2 = round(stake*( subsetList[0][key][0]*proportionsABC_list[0]  - subsetList[1][key_bookkie2][2]*proportionsABC_list[1]+ subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+                                #rofit_3 = round(stake*( subsetList[0][key][0]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][2]*proportionsABC_list[1]- subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+
+                                #vg_profit = round((1/3)*(profit_1 + profit_2 + profit_3),3)                                
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit,subsetList[0][key][0],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][1])
                                 #print('Bet (sure)  sombo just found has the wining home teams odds at ' + str(subsetList[0][key][0]) + 'in the bookie ->' + bookie_1 + ' the away win at odds = '  + str(subsetList[1][key_bookkie2][2]) + ' in bookie ' + str(bookie_2) + ' and finally the draw odds @ ' + str(subsetList[2][key_bookkie3][1]) + str(bookie_3) + '  \n')
                                 #return_surebet_vals([subsetList[0][key][0],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][1]],1000)
                                 continue
@@ -763,7 +598,21 @@ def check_for_sure_bets(*args):
                             if  check_is_surebet(subsetList[0][key][1],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][2]):
                                 sure_bet_counter += 1
                                 print('*****************************************************************************  SURE-BET FOUND !  :)   *****************************************************************************') 
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2, bookie_3,D,W_1,teamA_1, teamB_1, date,competition_1) 
+                                
+                                stake = 100.0
+                                ## calc. % profit for the lads:
+                                get_surebet_factor(subsetList[0][key][1],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][2])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][1],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][2],stake = stake)
+
+
+                                avg_profit = round(stake*(-subsetList[0][key][1]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][0]*proportionsABC_list[1] + subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+                                #profit_2 = round(stake*( subsetList[0][key][1]*proportionsABC_list[0]  - subsetList[1][key_bookkie2][0]*proportionsABC_list[1] + subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+                                #profit_3 = round(stake*( subsetList[0][key][1]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][0]*proportionsABC_list[1] - subsetList[2][key_bookkie3][2]*proportionsABC_list[2]),3)
+#
+                                #avg_profit = round((1/3)*(profit_1 + profit_2 + profit_3),3)
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit, subsetList[0][key][1],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][2]) 
                                 #print('Bet (sure)  combo just found has the draw odds at ' + str(subsetList[0][key][1]) + 'in the bookie ->' + bookie_1 + ' the home win at odds = '  + str(subsetList[1][key_bookkie2][0]) + ' in bookie ' + str(bookie_2) + ' and finally the away team win odds @ ' +  str(subsetList[2][key_bookkie3][2]) + ' in the bookies ->' + str(bookie_3) + '  \n') 
                                 #return_surebet_vals([subsetList[0][key][1],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][2]],1000)
                                 continue
@@ -774,7 +623,23 @@ def check_for_sure_bets(*args):
                             if  check_is_surebet(subsetList[0][key][1],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][0]):
                                 sure_bet_counter += 1
                                 print('*****************************************************************************  SURE-BET FOUND !  :)   *****************************************************************************') 
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2, bookie_3,D,W_2,teamA_1, teamB_1, date,competition_1) 
+                                
+                                stake = 100.0
+                                #profit = 1.0 - (1/subsetList[0][key][1] + 1/subsetList[1][key_bookkie2][2] + 1/subsetList[2][key_bookkie3][0])
+                                
+ 
+                                get_surebet_factor(subsetList[0][key][1],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][0])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][1],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][0],stake = stake)
+
+                                avg_profit = round(stake*(-subsetList[0][key][1]*proportionsABC_list[0] + subsetList[1][key_bookkie2][2]*proportionsABC_list[1] + subsetList[2][key_bookkie3][0]*proportionsABC_list[2]),3)
+                                #profit_2 = round(stake*( subsetList[0][key][1]*proportionsABC_list[0] - subsetList[1][key_bookkie2][2]*proportionsABC_list[1] + subsetList[2][key_bookkie3][0]*proportionsABC_list[2]),3)
+                                #profit_3 = round(stake*( subsetList[0][key][1]*proportionsABC_list[0] + subsetList[1][key_bookkie2][2]*proportionsABC_list[1] - subsetList[2][key_bookkie3][0]*proportionsABC_list[2]),3)
+#
+                                #avg_profit = round((1/3)*(profit_1 + profit_2 + profit_3),3)
+                                
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit,subsetList[0][key][1],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][0])
                                 #return_surebet_vals([subsetList[0][key][1],subsetList[1][key_bookkie2][2],subsetList[2][key_bookkie3][0]],1000)
                                 continue
 
@@ -784,7 +649,19 @@ def check_for_sure_bets(*args):
                             if  check_is_surebet(subsetList[0][key][2],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][1]):
                                 sure_bet_counter += 1
                                 print('*****************************************************************************  SUREBET FOUND !  :)   *****************************************************************************') 
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2, bookie_3,W_2,W_1,teamA_1, teamB_1, date,competition_1)  
+                                
+                                stake = 100.0
+                                get_surebet_factor(subsetList[0][key][2],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][1])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][2],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][1],stake = stake)
+
+                                avg_profit = round(stake*(-subsetList[0][key][2]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][0]*proportionsABC_list[1] + subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+                                #profit_2 = round(stake*( subsetList[0][key][2]*proportionsABC_list[0]  - subsetList[1][key_bookkie2][0]*proportionsABC_list[1] + subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+                                #profit_3 = round(stake*( subsetList[0][key][2]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][0]*proportionsABC_list[1] - subsetList[2][key_bookkie3][1]*proportionsABC_list[2]),3)
+#
+                                #avg_profit = round((1/3)*(profit_1 + profit_2 + profit_3),3)
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit, subsetList[0][key][2],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][1])  
                                 #print('Bet (sure)  combo just found has the away team ' +  teamB_1  + ' win odds at ' + str(subsetList[0][key][2]) + 'in the bookie ->' + bookie_1 + ' the home team -> ' + teamA_1  +  '<- win at odds = '  + str(subsetList[1][key_bookkie2][0]) + ' in bookie ' + str(bookie_2) + ' and finally the draw odds @ ' +  str(subsetList[2][key_bookkie3][1]) + ' in the bookies ->' + str(bookie_3) + '  \n') 
                                 #return_surebet_vals([subsetList[0][key][2],subsetList[1][key_bookkie2][0],subsetList[2][key_bookkie3][1]],1000)
                                 continue                         
@@ -794,8 +671,16 @@ def check_for_sure_bets(*args):
                             #print('   -- and  --  ' + str(W_1) + ' = ' + str(subsetList[2][key_bookkie3][0]))
                             if  check_is_surebet(subsetList[0][key][2],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][0]):
                                 sure_bet_counter += 1
-                                print('*****************************************************************************  SUREBET FOUND !  :)   *****************************************************************************') 
-                                send_mail_alert_gen_socer_surebet(bookie_1, bookie_2, bookie_3,W_2,D,teamA_1, teamB_1, date,competition_1)    
+                                print('*****************************************************************************  SUREBET FOUND !  :)   *************************0****************************************************')                                 
+                                stake = 100.0
+                                
+                                get_surebet_factor(subsetList[0][key][2],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][0])
+                                proportionsABC_list =  return_surebet_vals(subsetList[0][key][2],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][0],stake = stake)
+
+                                avg_profit = round(stake*(-subsetList[0][key][2]*proportionsABC_list[0]  + subsetList[1][key_bookkie2][1]*proportionsABC_list[1] + subsetList[2][key_bookkie3][0]*proportionsABC_list[2]),3)
+
+                                proportionsABC_listRnd = [round(x,2) for x in proportionsABC_list]
+                                send_mail_alert_gen_socer_surebet_prportions(bookie_1, bookie_2 ,bookie_3,W_1,D,teamA_1,teamB_1, date,competition_1,proportionsABC_listRnd, avg_profit, subsetList[0][key][2],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][0])    
                                 #return_surebet_vals([subsetList[0][key][2],subsetList[1][key_bookkie2][1],subsetList[2][key_bookkie3][0]],1000)
                                 continue  
                 else:
@@ -887,7 +772,6 @@ def send_mail_alert_odds_thresh(win_lose_or_draw,expect_oddB,actualOdd,teamA,tea
         Fp1.write(message + '  ' + date + '\n')
         Fp1.close()
 
-
         if DEBUG_OUTPUT :
             print("Successfully sent email")
 
@@ -898,13 +782,115 @@ def send_mail_alert_odds_thresh(win_lose_or_draw,expect_oddB,actualOdd,teamA,tea
 
     return successFlag
 
+def send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,date,competition,proportions_list, Profit,odd1,odd2,odd3):
+
+    global DEBUG_OUTPUT, surebet_factor
+    successFlag = False
+    sender = 'godlikester@gmail.com'
+    receivers = ['crowledj@tcd.ie','pauldarmas@gmail.com','raphael.courroux@hotmail.fr','theoletheo@hotmail.fr','alexandrecourroux@hotmail.com','scourroux@hotmail.com']
+
+    message = """From: From Person <from@fromdomain.com>
+    To: To Person <to@todomain.com>
+    Subject: SMTP e-mail test"""
+
+    bookieTeamA = ""
+    bookieTeamB = ""
+    bookieDraw  = ""
+
+    if "Home team " in bookie_one_outcome:
+        bookieTeamA = bookie_1
+    elif  "Away team " in bookie_one_outcome:
+        bookieTeamB = bookie_1  
+    else:
+        bookieDraw = bookie_1      
+   
+
+    if "Home team " in bookie_2_outcome:
+        bookieTeamA = bookie_2
+    elif  "Away team " in bookie_2_outcome:
+        bookieTeamB = bookie_2  
+    else:
+        bookieDraw = bookie_2
+
+
+    if  not bookieTeamA :
+        bookieTeamA = bookie_3
+
+    elif not bookieTeamB :
+        bookieTeamB = bookie_3     
+
+    else:
+        bookieDraw = bookie_3 
+
+
+   #round(1/(proportions_list[0]*surebet_factor),2)) + """
+   #round(1/(proportions_list[1]*surebet_factor),2)) + """
+   #round(1/(proportions_list[2]*surebet_factor),2))      
+
+
+    message = """From: From Person <from@fromdomain.com>
+    To: To Person <to@todomain.com>
+    Subject: SMTP e-mail test
+
+    Surebet Alert  :
+
+    Profit = """ + str(round( Profit ,3)) + """
+      
+    Event: """ + str(competition) + """
+    Date: """ + str(date) + """
+    teamA: """ + str(teamA) + """
+    teamB: """ + str(teamB) + """
+
+    bookieTeamA: """ + str(bookieTeamA) + """   """  + str(proportions_list[0] *100.0) + """ % -- odd_1 is = """    +  str(odd1) + """     
+    bookieDraw: """  + str(bookieDraw)  +  """   """  + str(proportions_list[1]*100.0) + """ % -- odd_2 is = """    + str(odd2) + """     
+    bookieTeamB: """ + str(bookieTeamB) + """   """  + str(proportions_list[2] *100.0) +  """ % -- odd_3 is = """   +  str(odd3)          
+
+
+    if  not find_substring(unibet,bookieTeamA) and  not find_substring(zebet,bookieTeamA) and  not find_substring(betclic,bookieTeamA) and  not find_substring(winimax ,bookieTeamA) and  not find_substring(paris_sportifs_pmu ,bookieTeamA) \
+        and  not find_substring(parionbet,bookieTeamA) and  not find_substring(france_pari,bookieTeamA):
+        print('bookieTeamA = ->' + str(bookieTeamA) + '<-')
+        c = 3
+
+    #for line in fp1:
+    global list_mailed_surebets 
+    list_mailed_surebets.append("""bookieTeamA: """ + str(bookieTeamA) + """   """  + str(proportions_list[0]) + """ % -- odd_1 is = """    +  str(odd1) +  """ bookieDraw: """  + str(bookieDraw)  +  """   """  + str(proportions_list[1]) + """ % -- odd_2 is = """    + str(odd2) + """ \
+        bookieTeamB: """ + str(bookieTeamB) + """   """  + str(proportions_list[2]) +  """ % -- odd_3 is = """   +  str(odd3) )
+    #fp1.close()
+
+
+    print(' ********************   message = ' + message)
+    print(' ******************** ')
+    if message in list_mailed_surebets:
+        print('sureBet already found -- dontt re-mail ')
+        return successFlag
+
+    if Profit > 100.3:
+
+        try:
+            smtpObj = smtplib.SMTP_SSL("smtp.gmail.com",465)
+            smtpObj.login("godlikester@gmail.com", "Pollgorm1")
+            smtpObj.sendmail(sender, receivers, message)         
+            print("Successfully sent email")
+
+            FP1 = open(surebets_Done_list_textfile,'a')
+            FP1.write(message + '\n')
+            FP1.close()
+
+            successFlag = True
+        except SMTPException:
+            print("Error: unable to send email")
+            pass
+
+
+    return successFlag
+
 
 def send_mail_alert_gen_socer_surebet(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,date,competition):
 
     global DEBUG_OUTPUT
     successFlag = False
     sender = 'godlikester@gmail.com'
-    receivers = ['crowledj@tcd.ie','pauldarmas@gmail.com','raphael.courroux@hotmail.fr','theoletheo@hotmail.fr','alexandrecourroux@hotmail.com','scourroux@hotmail.com']
+    receivers = ['crowledj@tcd.ie'] #,'pauldarmas@gmail.com','raphael.courroux@hotmail.fr','theoletheo@hotmail.fr','alexandrecourroux@hotmail.com','scourroux@hotmail.com']
 
     message = """From: From Person <from@fromdomain.com>
     To: To Person <to@todomain.com>
@@ -1006,10 +992,17 @@ def find_substring(substring, string):
     return indices 
 
 
+tot_parionbet   = 0.0
+tot_france_pari = 0.0
+tot_winimax     = 0.0
+tot_cbet        = 0.0
+tot_pmu         = 0.0
+tot_unibet      = 0.0
+tot_betclic     = 0.0
 
 def parseSites(driver): 
 
-    global websites_champs_league_links, compettition, date, refernce_champ_league_gamesDict, full_all_bookies_allLeagues_match_data, DEBUG_OUTPUT, all_split_sites_data
+    global websites_champs_league_links, compettition, date, refernce_champ_league_gamesDict, full_all_bookies_allLeagues_match_data, DEBUG_OUTPUT, all_split_sites_data, tot_parionbet , tot_france_pari, tot_winimax, tot_cbet, tot_pmu, tot_unibet, tot_betclic    
 
     # reset full league dict so as not to keep appending to it below
     full_all_bookies_allLeagues_match_data.clear()
@@ -1522,7 +1515,7 @@ def parseSites(driver):
     #                 print("Error  caught in your find_elements_by_xpath() call -- NoSuchElementException ! :( ")
     #                 continue
 
-    #         if sports_bwin in sites :
+    #         if sports_bwin in sites :\
     #         # unibet tree struct to games elements:
 
     #             try:
@@ -1536,7 +1529,7 @@ def parseSites(driver):
 
     #                 for matches in  europa_league_games_nested_gamesinfo_zebet:
     #                     print(matches.text)
-    #                     split_match_data_str = matches.text.split('\n') 
+    #                     split_match_data_str = matchestime.text.split('\n') 
     #                     date =  unidecode.unidecode(split_match_data_str[0])
     #                     teams = unidecode.unidecode(split_match_data_str[2] + '_' + split_match_data_str[6])
     #                     competition =  compettition #split_match_data_str[1]    
@@ -1559,7 +1552,7 @@ def parseSites(driver):
 
 
     wait_time12 = random.randint(1,2)
-    time.sleep(wait_time12)  
+    #time.sleep(wait_time12)  
     
     #websites_ligue1_links.append('https://www.zebet.fr/fr/lives')
     #websites_ligue1_links.append('https://www.france-pari.fr/lives')
@@ -1574,9 +1567,9 @@ def parseSites(driver):
         #finish = timeit.timeit()
         compettition_ = 'ligue1'
 
+        start_france_pari = time.time()  
         if  france_pari in sites :
         # # zebet tree struct to games elements:    
-
             # live games parsing tips ...:
 
             # in live link - go to element : //*[@id="currentlive"]/div/div -> list of sub element are divs
@@ -1637,80 +1630,183 @@ def parseSites(driver):
                         full_all_bookies_allLeagues_match_data[ france_pari + '_' + unidecode.unidecode(date.lower()) + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
                         full_all_bookies_allLeagues_match_data[ france_pari + '_' + unidecode.unidecode(date.lower()) + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
 
+                end_france_pari = time.time()     
+                tot_france_pari +=  end_france_pari - start_france_pari
+                print('time taken to process france_pari was = ' + str(end_france_pari - start_france_pari))    
             except NoSuchElementException:
                 any_errors = False
                 print("Error  caught in your FRANCE_PARI parse func. block call --  :( ..... ")
                 continue
 
-
+        start_betclic = time.time()            
         if  betclic in sites :
             print('in betclic ligue1 pre-match parsing .... \n \n')  
 
             # /html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details  
-            ligue1_games_info_betclic = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div') 
-                                                                                
+                                                                        
+            ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
+            ## use this when generalizing leagues ...
+            #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')    
+            ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
+
+
             ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
             #for matches in  ligue1_games_infozebet:
             #parts1 = ligue1_games_info_betclic[0].text.split('+')
             competition = compettition_
-            for dates in  ligue1_games_info_betclic:
+            second_route = False
+            if not ligue1_games_info_betclic:
+                second_route = True
 
-                game_info_france1  = dates.text.lower().split('ligue 1 uber eats')
-                game_info_england1 = dates.text.lower().split('premier league')
-                game_info_spain1   = dates.text.lower().split('liga primera')
-                game_info_italy1   = dates.text.lower().split('serie a')
-                game_info_germany1 = dates.text.lower().split('bundesliga')
+            ## A whole new branch of code - relating to a change I  noticed in Betclic page-parsing since 01/02/2021
+            if second_route:
 
-                if len(game_info_france1) > 1:
-                    game_info = game_info_france1
+                for panels in ligue1_games_info_betclic_1:
 
-                elif len(game_info_england1) > 1:
-                    game_info = game_info_england1    
+                    games_per_panel = panels.find_elements_by_xpath('.//app-event/div/a/div/div')
 
-                elif len(game_info_spain1) > 1:
-                    game_info = game_info_spain1
+                    for matchs in  games_per_panel:
 
-                elif len(game_info_italy1) > 1:
-                    game_info = game_info_italy1 
+                        # game_info_france1  = dates.text.lower().split('ligue 1 uber eats')
+                        # game_info_england1 = dates.text.lower().split('premier league')
+                        # game_info_spain1   = dates.text.lower().split('liga primera')
+                        # game_info_italy1   = dates.text.lower().split('serie a')
+                        # game_info_germany1 = dates.text.lower().split('bundesliga')
 
-                elif len(game_info_germany1) > 1:
-                    game_info = game_info_germany1
+                        # if len(game_info_france1) > 1:
+                        #     game_info = game_info_france1
 
-                else:
-                    print('issue in getting any proper matches data in betclic...')
-                    continue
+                        # elif len(game_info_england1) > 1:
+                        #     game_info = game_info_england1    
 
-                date = unidecode.unidecode(game_info[0].split('\n')[0])
-                for matchs in game_info[1:]:
+                        # elif len(game_info_spain1) > 1:
+                        #     game_info = game_info_spain1
 
-                    ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-                    # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+                        # elif len(game_info_italy1) > 1:
+                        #     game_info = game_info_italy1 
 
-                    info_per_match = matchs.split('\n')
-                    if len(info_per_match) >= 13 :
+                        # elif len(game_info_germany1) > 1:
+                        #     game_info = game_info_germany1
 
-                        ## !!! LIVE games change to be done as swmn here...
+                        # else:
+                        #     print('issue in getting any proper    matches data in betclic...')
+                        #     pass
+
+                        date = str(datetime.datetime.today()).split()[0] 
+                        
+
+                            ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                            # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+
+                        info_per_match = matchs.text.split('\n')
+                        if len(info_per_match) >= 13 :
+
+                            ## !!! LIVE games change to be done as swmn here...
+
+                            ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                            # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+                            try:
+                                teamA = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[1] + info_per_match[2]).lower().strip()]
+                                teamB = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[9] + info_per_match[10]).lower().strip()]
+                            except KeyError:
+                                any_errors = False
+                                print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                continue
+                            
+                            try:
+                                teamAWinOdds = info_per_match[3]
+                                draw_odds    = info_per_match[7]
+                                teamBWinOdds = info_per_match[11]
+                            except IndexError:
+                                any_errors = False
+                                print("Error  caught in 6your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
+                                continue
+
+                            try:
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
+
+                            except ValueError:
+                                any_errors = False
+                                print("Error  caught in your BETCLIC parse func. block call --  :( .....")
+                                continue
+
+            else:
+
+                for dates in  ligue1_games_info_betclic:
+
+                    game_info_france1  = dates.text.lower().split('ligue 1 uber eats')
+                    game_info_england1 = dates.text.lower().split('premier league')
+                    game_info_spain1   = dates.text.lower().split('liga primera')
+                    game_info_italy1   = dates.text.lower().split('serie a')
+                    game_info_germany1 = dates.text.lower().split('bundesliga')
+
+                    if len(game_info_france1) > 1:
+                        game_info = game_info_france1
+
+                    elif len(game_info_england1) > 1:
+                        game_info = game_info_england1    
+
+                    elif len(game_info_spain1) > 1:
+                        game_info = game_info_spain1
+
+                    elif len(game_info_italy1) > 1:
+                        game_info = game_info_italy1 
+
+                    elif len(game_info_germany1) > 1:
+                        game_info = game_info_germany1
+
+                    else:
+                        print('issue in getting any proper matches data in betclic...')
+                        continue
+
+                    date = unidecode.unidecode(game_info[0].split('\n')[0])
+                    for matchs in game_info[1:]:
 
                         ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
                         # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
 
-                        teamA = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[1]).lower().strip()]
-                        teamB = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[2]).lower().strip()]
-                        teamAWinOdds = info_per_match[6]
-                        draw_odds    = info_per_match[9]
-                        teamBWinOdds = info_per_match[12]
+                        info_per_match = matchs.split('\n')
+                        if len(info_per_match) >= 13 :
 
-                        try:
-                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
-                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
+                            ## !!! LIVE games change to be done as swmn here...
 
-                        except ValueError:
-                            any_errors = False
-                            print("Error  caught in your BETCLIC parse func. block call --  :( .....")
-                            continue
+                            ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                            # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+                            try:
+                                teamA = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[1]).lower().strip()]
+                                teamB = comon_TeamNames_mapper[unidecode.unidecode(info_per_match[2]).lower().strip()]
+                            except KeyError:
+                                any_errors = False
+                                print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                continue
+                            
+                            try:
+                                teamAWinOdds = info_per_match[6]
+                                draw_odds    = info_per_match[9]
+                                teamBWinOdds = info_per_match[12]
+                            except IndexError:
+                                any_errors = False
+                                print("Error  caught in your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
+                                continue
+
+                            try:
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
+                                full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
+
+                            except ValueError:
+                                any_errors = False
+                                print("Error  caught in your BETCLIC parse func. block call --  :( .....")
+                                continue                                
 
 
+            end_betclic = time.time()  
+            tot_betclic += end_betclic - start_betclic
+            print('time taken to process betclic was = ' + str(end_betclic - start_betclic))                 
+
+        start_unibet = time.time()
         if  unibet in sites :
         # unibet tree struct to games elements:
             print('in unibet ligue1 pre-match parsing .... \n \n')  
@@ -1725,12 +1821,8 @@ def parseSites(driver):
             #/html/body/div[1]/div[2]/div[5]/div/section/div/section/div/section/div/div[1]/div[2]/div/div/div/    section/div/ul/li/div/div/li/div/ul/ul/li/div[2]/div[2]/div/section/div/div
             
             # 3 'span' elements in here with odds
-
             # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
            
-            #wait_time12 = random.randint(1,2)
-            #time.sleep(wait_time12)  
-            #print('second rand wait time = ' + str(wait_time12))
             try:
 
                 wait_time37 = random.randint(3,6)
@@ -1851,7 +1943,11 @@ def parseSites(driver):
 
                             full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamAWinOdds))   
                             full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(draw_odds))    
-                            full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamBWinOdds))                        
+                            full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamBWinOdds))  
+
+                end_unibet = time.time()  
+                tot_unibet += end_unibet - start_unibet
+                print('time taken to process unibet was = ' + str( end_unibet - start_unibe ))                                
 
             except: #  NoSuchElementException:
                 any_errors = False
@@ -1914,11 +2010,12 @@ def parseSites(driver):
                     full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
 
 
+        #sites = "https://www.zebet.fr/en/competition/94-premier_league"
         if  zebet in sites and 'live' not in sites:
         # # zebet tree struct to games elements:                                                     
             print('in zebet ligue1 pre-match parsing .... \n \n')  
             try:
-
+                                                                        #//*[@id="event"]/article[1]/div/div/div/div
                 ligue1_games_infozebet = driver.find_elements_by_xpath('//*[@id="event"]/article/div/div/div/div/div') 
                 ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
 
@@ -1954,12 +2051,17 @@ def parseSites(driver):
 
         #full path copied from sourcecode tool       
         #/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]
-
+        start_winimax = time.time()
         if winimax in sites :        
             print('in winimax ligue1 pre-match parsing .... \n \n')   
-
+                                                                                       
             ligue1_games_nested_gamesinfo_winimax = driver.find_elements_by_xpath('/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div')                                    
-                                                                                  # /html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div                                                                                    # #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
+                                                                                  # /html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div  
+            ligue1_games_nested_gamesinfo_winimax_2 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div')                                                                    
+
+            if not  ligue1_games_nested_gamesinfo_winimax:
+                ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_2                                                                    
+                                                                                                                                                                   # #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
             # TEST _ CHANGE Loop var to the live one here temporarily
             for matches in ligue1_games_nested_gamesinfo_winimax: #ligue1_games_nested_gamesinfo_winimax_live_footy:  # ligue1_games_nested_gamesinfo_winimax:                 #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
 
@@ -1981,16 +2083,25 @@ def parseSites(driver):
                 split_match_data_str = matches.text.split('\n')
 
                 if len(split_match_data_str) >= 4:
-                    check_teams_in_str = [True for y in All_ligue1_team_list if find_substring(y,unidecode.unidecode(matches.text).lower())]
+                    # check_teams_in_str = [True for y in All_ligue1_team_list if find_substring(y,unidecode.unidecode(matches.text).lower())]
 
-                    if not check_teams_in_str:
-                        continue
+                    # if not check_teams_in_str:
+                    #     continue
                     
                     separate_team_names = split_match_data_str[0].split(' vs ')
-                    teamA = comon_TeamNames_mapper[unidecode.unidecode(separate_team_names[0]).lower()]
-                    teamB = comon_TeamNames_mapper[unidecode.unidecode(separate_team_names[1]).lower()]
-                    competition   =  compettition_ #split_match_data_str[1]    
+                    try:
+                        teamA = comon_TeamNames_mapper[unidecode.unidecode(separate_team_names[0]).lower()]
+                        teamB = comon_TeamNames_mapper[unidecode.unidecode(separate_team_names[1]).lower()]
+                    except ValueError:
+                        any_errors = False
+                        print(" Value  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
+                        continue
+                    except KeyError:
+                        any_errors = False
+                        print(" Key  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
+                        continue            
 
+                    competition   =  compettition_ #split_match_data_str[1]    
                     try :
 
                         if longer_info_match:
@@ -2014,55 +2125,123 @@ def parseSites(driver):
                     full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teamA +  ' - ' + teamB].append(draw_odds)
                     full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teamA +  ' - ' + teamB].append(teamBWinOdds)
 
+            end_winimax = time.time()  
+            tot_winimax +=  end_winimax - start_winimax
+            print('time taken to process winimax was = ' + str(end_winimax - start_winimax))
 
-   ## TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!         
+   ## TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!    
+        
         
         time.sleep(wait_time12) 
         ## somethin wrong with assumed html in link - think i must navigate all the way from base url with button click and hfers links etc
-        if cbet in sites :        
-            time.sleep(wait_time12)    
-        
-            ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
-            ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul') #'/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]')                                    
 
+        start_cbet = time.time()  
+        #print('time taken to process unibet was = ' + str(start_unibet - end_unibet))
+        if cbet in sites :        
+            time.sleep(wait_time12)
+            #time.sleep(wait_time12)     
+            #time.sleep(wait_time12) 
+            #driver.implicitly_wait(13)
+            
+            #WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,'/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul/li')))
+
+            ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')  
+            time.sleep(wait_time12)   
+            ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/main') #body/div[1]/div/div[2]/div[1]/div/section/section/ul') #'/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]')                                    
+            time.sleep(wait_time12) 
 
             ligue1_games_gamesinfo_cbet  = ligue1_games_nested_gamesinfo_cbet
             if not  ligue1_games_nested_gamesinfo_cbet:
                 ligue1_games_gamesinfo_cbet = ligue1_games_nested_gamesinfo_cbet_2
 
-            #resultElements = ligue1_games_nested_gamesinfo_cbet.click()
-            for matches in  ligue1_games_gamesinfo_cbet :            
+            time.sleep(wait_time12) 
+        
+            #/html/body/div[1]/div/div[1]/div[1]/div[1]/ul/li[7]
+            #/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul    
+            #//*[@id="prematch-events"]/div[1]/div/section/section/ul/li[1]
+            try:
+                iframe_     = ligue1_games_nested_gamesinfo_cbet_2[0].find_element_by_xpath('.//iframe')
+            except IndexError:
+                print('Key error caught in cbet parsing, continuing ...')
+                continue 
 
-                #/html/body/div[1]/div/div[1]/div[1]/div[1]/ul/li[7]
-                #/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul    
-                #//*[@id="prematch-events"]/div[1]/div/section/section/ul/li[1]
-                date = '20 decembre' #unidecode.unidecode('?? ') 
+            iframe_link = iframe_.get_attribute('src')
+            driver.get(iframe_link)
+            ## Now in the internal links html and can crawl and scrAPE  as per usual
+
+    #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
+
+            date = '20 decembre' #unidecode.unidecode('?? ') 
+            time.sleep(wait_time12)
+            #time.sleep(wait_time12)
+
+            wait_time37 = random.randint(3,6)
+            #print('second rand wait time = ' + str(wait_time37))
+            time.sleep(wait_time37)  
+                                                               
+            league_selector =  driver.find_elements_by_xpath('//*[@id="prematch-top-leagues"]/ul/li')                    
+            for leagues in league_selector:
+
+                if 'Ligue 1' in leagues.text:
+                    leagues.click()
+                    break
+            time.sleep(wait_time12)
+            time.sleep(wait_time37) 
+            #matches_soccer_info_2 = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
+            matches_soccer_info_2 =  driver.find_elements_by_xpath( '//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
+            for matches in matches_soccer_info_2:
 
                 split_match_data_str = matches.text.split('\n') 
-                if len(split_match_data_str) >= 8:
-                    teams = unidecode.unidecode(split_match_data_str[0])
+
+                if len(split_match_data_str) >= 4:
+                    teams = unidecode.unidecode(split_match_data_str[3]).lower().strip() # + unidecode.unidecode(split_match_data_str[5]).lower().strip(0)
                     #teams = split_match_data_str[2] #+ '_' + split_match_data_str[6]
+                    try:
+                        teams_split = teams.split('-')
+
+                        if len(teams_split) == 2:
+                            teamA = comon_TeamNames_mapper[unidecode.unidecode(teams_split[0]).strip()]
+                            teamB = comon_TeamNames_mapper[unidecode.unidecode(teams_split[1]).strip()]
+                            teams = teamA + ' - ' + teamB
+
+                    except KeyError:
+                        print('Key error caught in cbet parsing, continuing ...')
+                        continue 
+
                     competition  =  compettition_ #split_match_data_str[1]    
+                    print(split_match_data_str)
+                    print('\n \n')
 
                     try:
-                        teamAWinOdds = split_match_data_str[2].replace(',','.')
+                        teamAWinOdds = split_match_data_str[4].replace(',','.')
                         draw_odds    = split_match_data_str[5].replace(',','.')
-                        teamBWinOdds = split_match_data_str[8].replace(',','.')
+                        teamBWinOdds = split_match_data_str[6].replace(',','.')
                     except IndexError:
                         print('Index error caught in cbet parsing, continuing ...')
                         continue    
+
+                    #=
                         
                     try:    
                     
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamAWinOdds)) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(draw_odds))
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamBWinOdds))
+                        full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamAWinOdds)) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                        full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(draw_odds))
+                        full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamBWinOdds))
                     
                     except  ValueError:
-                        print("error  in sports.bwin site parsing... ") 
+                        print("error  in CBET site parsing... ") 
+
+            end_cbet = time.time()  
+            tot_cbet +=  end_cbet - start_cbet
+            print('time taken to process cbet was = ' + str(start_cbet - end_cbet))
+            # url = sites
+            # headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
+            # res = requests.get(url=url, headers=headers).json()
+            # print(res)
+            # for i in res['data']: #['list']:
+            #     print(i)                
 
 # Hiddemn Div here needs fixing:
-
 # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
 
         if sports_bwin in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
@@ -2137,8 +2316,10 @@ def parseSites(driver):
                         #time.sleep(wait_time13)      
                     except  ValueError:
                         print("error  in sports.bwin site parsing... ")
-                                         
 
+
+
+        start_parion = time.time()                                          
 # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
         if parionbet in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
             print('in parionbet ligue1 pre-match prsing .... \n \n')
@@ -2240,9 +2421,14 @@ def parseSites(driver):
 
                                     except ValueError:
                                         print('value error in parion in float casting odds...')    
+            
                                         continue      
 
+            end_parion = time.time()  
+            tot_parionbet +=  end_parion - start_parion
+            print('time taken to process pmu was = ' + str(end_parion - start_parion )) 
 
+        start_pmu = time.time() 
          ## canr SEEM TO RUN AT AL WHEN LIVE LIGUE ONE GAMES ARE ON !??                
         #https://paris-sportifs.pmu.fr/pari/competition/169/football/ligue-1-uber-eats%C2%AE
         if paris_sportifs_pmu[8:26] in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
@@ -2270,7 +2456,7 @@ def parseSites(driver):
             date = unidecode.unidecode(game_info[0].split('\n')[0])
             for games in game_info:
                 #all_games =  games.find_elements_by_xpath('//ms-event')
-                time.sleep(wait_time12)
+                #time.sleep(wait_time12)
                     #[0].split('\n')
                 #for game in game_info:
                 matches = games.split('//')            
@@ -2303,10 +2489,15 @@ def parseSites(driver):
                     full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
                     full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
 
+            end_pmu = time.time()  
+            tot_pmu +=  end_pmu - start_pmu
+            print('time taken to process pmu was = ' + str(end_pmu - start_pmu))
         #     except NoSuchElementException:
                 # any_errors = False
                 # print("Error  caught in your pmu sports parse func. block ..... :( ")
                 # continue 
+
+
                         
     ## create sepaarate dicts for each bookies :
     unibet_dict      = defaultdict(list)
@@ -2373,6 +2564,8 @@ def parseSites(driver):
             #all_split_sites_data.append(pasinobet_dict)
 
         if cbet in keys:
+            if  not values:
+                continue
             cbet_dict[keys] = values
             #all_split_sites_data.append(pasinobet_dict)
             # 
@@ -2403,7 +2596,7 @@ def parseSites(driver):
     if len(parionbet_dict) > 0:
         all_split_sites_data.append(parionbet_dict)
  
-    if len(cbet_dict) > 0:
+    if cbet_dict and len(cbet_dict) > 0:
         all_split_sites_data.append(cbet_dict)
 
     if len(pmu_dict) > 0:
