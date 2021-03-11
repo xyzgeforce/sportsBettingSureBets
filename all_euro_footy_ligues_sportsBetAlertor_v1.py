@@ -311,7 +311,7 @@ def check_for_sure_bets(*args):
             # #print('new data dict. has been updated ...! :)')
 
     ## print average timers  parsings of each sites:
-        print('AVerage time to do cbet parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_cbet/globCounter))
+        #print('AVerage time to do cbet parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_cbet/globCounter))
         print('AVerage time to do unibet parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_unibet/globCounter))
         print('AVerage time to do france_pari parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_france_pari/globCounter))
         print('AVerage time to do winimax parsings at the ' + str(globCounter) + ' iteration = ' + str(tot_winimax/globCounter))
@@ -434,7 +434,7 @@ def check_for_sure_bets(*args):
                         ## check i stest for now here... !! re - undo former statement test after    
                         if (truth_list_subStrKeysDict2 and not (find_substring(bookie_1,bookie_2) )) and (truth_list_subStrKeysDict3 and not ( find_substring(bookie_1,bookie_3))):
                             
-                            checxking_surebet_counts += 1
+                            checxking_surebet_counts += 6
                             #print('Checking for surebets -- idir teams : ' + str(teamA_1) +  '  and  ' + str(teamB_1)   + '.... checking_surebet_counts =  ' + str(checxking_surebet_counts)) 
                             #print('Bookies in order of odds are : ' + bookie_1  + bookie_2 + bookie_3 + '\n')
                             
@@ -707,7 +707,7 @@ def send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,book
     sender =  'godlikester@gmail.com'
 
 ## TEST - ONLY HARDCODING HERE FOR FIRST KNCK OUT RUN OF CHAMPIONS LEAGUE GAMES
-    competition = 'Ligue des Champions'
+    #competition = 'Ligue des Champions'
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!! END TEST !!!!!!!!!!!!!
 
     if TEST_MODE:
@@ -902,7 +902,7 @@ tot_pmu         = 0.0
 tot_unibet      = 0.0
 tot_betclic     = 0.0
 
-competition = "reg_competition"
+compettition = "reg_competition"
 def parseSites(driver): 
 
     start_mainParserTimer = time.time()
@@ -912,7 +912,7 @@ def parseSites(driver):
     full_all_bookies_allLeagues_match_data.clear()
     any_errors = True      
 
-    global competition
+    global compettition
 ################# ***********************################# ***********************################# ***********************################# ***********************################# ***********************
 ################# ***************************                            LIGUE 1 GAMES                      *******************************########################################
 ################# ***********************################# ***********************################# ***********************################# ***********************################# ***********************
@@ -924,8 +924,9 @@ def parseSites(driver):
     #websites_ligue1_links.append('https://www.zebet.fr/fr/lives')
     #websites_ligue1_links.append('https://www.france-pari.fr/lives')
 
-    compettitions =  [all_premier_league_sites, all_la_liga_sites, websites_ligue1_links]# websites_champs_league_links, websites_ligue1_links ] # websites_europa_league_links,  # [ serie_a_links, bundesliga_links, all_premier_league_sites, all_la_liga_sites, websites_ligue1_links]
-
+    compettitions =  [websites_europa_league_links, websites_champs_league_links, websites_ligue1_links, all_premier_league_sites, all_la_liga_sites,  serie_a_links, bundesliga_links]
+    
+     # websites_europa_league_links,  # [ serie_a_links, bundesliga_links, all_premier_league_sites, all_la_liga_sites, websites_ligue1_links]
     ## default for teams mapping dict. is Ligue 1 :
     # team_names_maping = comon_TeamNames_mapper
     # if websites_champs_league_links in compettitions or websites_europa_league_links in compettitions :
@@ -933,64 +934,65 @@ def parseSites(driver):
     combined_leagues_maping = {}
     #comon_TeamNames_mapper = {'stade brestois': 'brest', 'brestois': 'brest', 'olympiue lyonnais':'lyon', 'olympiue lyon':'lyon','paris saint-germain':'psg','paris saint germain':'psg','paris st-germain':'psg','paris st germain':'psg'
     combined_leagues_maping.update( comon_TeamNames_mapper )
-    combined_leagues_maping.update( commonName_mapping )
+    combined_leagues_maping.update( EPL_commonName_mapping )
     combined_leagues_maping.update( xtra_champ_league_maping )
     combined_leagues_maping.update( la_Liga_commonName_mapping )
     combined_leagues_maping.update( comon_team_maping_europa )
+    combined_leagues_maping.update( serie_a_commonName_mapping )
+    combined_leagues_maping.update( bundesliga_commonName_mapping )
 
     team_names_maping = combined_leagues_maping
-
-
     for indx, compettition in enumerate(compettitions):
 
         # if compettition:
         #     compettition_link1 = compettition[0].lower()
 
-        if compettitions[indx] == websites_ligue1_links:
+        if compettition == websites_ligue1_links:
             # 'ligue1' in compettition_link1 or  'ligue-1' in compettition_link1 or  'ligue_1' in compettition_link1 or  'ligue 1' in compettition_link1 : # == websites_ligue1_links:
             LEAGUE_FLAG = 'french'
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
-            compettition_ = 'Ligue 1'
+            competition = 'Ligue 1'
 
-        elif compettitions[indx] == all_premier_league_sites:
+        elif compettition == all_premier_league_sites:
             # 'premier-league' in compettition_link1 or 'premier league' in compettition_link1 or 'premierleague' in compettition_link1 or 'premier_league' in compettition_link1:  # == websites_ligue1_links:
             LEAGUE_FLAG = 'english prem. league ... '
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')     
-            compettition_ = 'Premier League'
+            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
+            competition = 'Premier League'
 
-        elif compettitions[indx] == all_la_liga_sites:
+
+        elif compettition == all_la_liga_sites:
             # 'la liga' in compettition_link1 or 'primera liga' in compettition_link1 or 'la-liga' in compettition_link1 or  'la_liga' in compettition_link1 or  'liga-primera' in compettition_link1  or  'primera-liga' in \
             # compettition_link1 or  'espagne' in compettition_link1 or  'laliga' in compettition_link1 : #== websites_ligue1_links:
             LEAGUE_FLAG = 'spanish league - La liga ... '    
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
-            compettition_ = 'La Liga'
+            competition = 'La Liga'
 
-        elif compettitions[indx] == serie_a_links:
+        elif compettition == serie_a_links:
             # 'serie a' in compettition_link1 or 'seriea' in compettition_link1 or 'serie-a' in compettition_link1 or 'italie' in compettition_link1 or 'serie_a' in compettition_link1: # == websites_ligue1_links:
             LEAGUE_FLAG = 'Italian league -- Serie A ...'   
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
-            compettition_ = 'Serie A'
+            competition = 'Serie A'
 
-        elif compettitions[indx] == bundesliga_links:
+        elif compettition == bundesliga_links:
             # 'bundesliga' in compettition_link1: # == websites_ligue1_links:
             LEAGUE_FLAG = 'German top league -- Bundeslagi BAUSh Bush ! ... ' 
-            compettition_ = 'Bundesliga'
+            competition = 'Bundesliga'
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
 
-        elif compettitions[indx] == websites_champs_league_links: #'champs_league' in compettition_link1 or 'champions' in compettition_link1:
+        elif compettition == websites_champs_league_links: #'champs_league' in compettition_link1 or 'champions' in compettition_link1:
             LEAGUE_FLAG = 'Champions' 
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')  
-            compettition_ = 'Ligue des Champions' 
+            competition = 'Ligue des Champions' 
 
-        elif compettitions[indx] == websites_europa_league_links:
+        elif compettition == websites_europa_league_links:
             # 'europa' in compettition_link1:
             LEAGUE_FLAG = 'Europa' 
             print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
-            compettition_ = 'Europa League'
+            competition = 'Europa League'
 
         else:
             print('league not found in competitions list...')
-            compettition_ = 'Ligue 1'
+            competition = 'Ligue 1'
             continue                
 
         for i,sites in enumerate(compettition):
@@ -1019,7 +1021,7 @@ def parseSites(driver):
 
                 # also note - other league games r mixed up with them so must do a continue in the loop if not a game idir ligue one teams, NOT a break!
                 
-                print('in france_pari ligue1 pre-match parsing .... \n \n')                                                 
+                print('in france_pari ' + competition + ' ligue1 pre-match parsing .... \n \n')                                                 
                 # try:
 
                 #     ## find sport 1st - > football ,
@@ -1032,6 +1034,7 @@ def parseSites(driver):
                 #             sport_link = sports[0].get_attribute('href').lower()
                 #         else:
                 #             continue    
+
 
                 #         if 'football' in sport_link:
                 #             parent_ = sports[0].find_element_by_xpath('./..')
@@ -1073,7 +1076,7 @@ def parseSites(driver):
                 ligue1_games_info_france_pari_try_2 = driver.find_elements_by_xpath('//*[@id="colonne_centre"]/div/div/div[2]/div')         
                 #for matches in  ligue1_games_infozebet:
 
-                competition = compettition_
+                #competition = compettition_
                 ligue1_games_info_france_pari = ligue1_games_info_france_pari_try_1
                 if not ligue1_games_info_france_pari_try_1:
                     ligue1_games_info_france_pari = ligue1_games_info_france_pari_try_2
@@ -1127,32 +1130,34 @@ def parseSites(driver):
 
             start_betclic = time.time()            
             if  betclic in sites :
-                print('in betclic ligue1 pre-match parsing .... \n \n')  
+                print('in betclic ' +  competition  + ' pre-match parsing .... \n \n')  
 
                 # /html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details  
-                                                                            
+                                                                        
                 ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
                 ## use this when generalizing leagues ...
                 #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')    
                 ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
                 
-
                 # champs league link n web elements location
                 ligue1_games_info_betclic_champsL = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div')
 
                 ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
                 #for matches in  ligue1_games_infozebet:
                 #parts1 = ligue1_games_info_betclic[0].text.split('+')
-                competition = compettition_
+
+                #competition = compettition_
                 second_route = False
 
-
-                if not ligue1_games_info_betclic:
+                if not ligue1_games_info_betclic and not ligue1_games_info_betclic_1:
                     second_route = True
 
                 ## A whole new branch of code - relating to a change I  noticed in Betclic page-parsing since 01/02/2021
                 if second_route:
+
+                ## !! Change this     
                     gen_games_info_betclic = ligue1_games_info_betclic_1
+                    
                     if LEAGUE_FLAG == 'Champions':
 
                         gen_games_info_betclic = ligue1_games_info_betclic_champsL
@@ -1165,9 +1170,7 @@ def parseSites(driver):
                             continue  
 
                         for matchs in  games_per_panel:
-
                             date = str(datetime.datetime.today()).split()[0] 
-                            
                                 ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
                                 # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
                             try:                       
@@ -1301,23 +1304,23 @@ def parseSites(driver):
                 # 3 'span' elements in here with odds
                 # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
 
-                if 'ligue 1' in sites:
-                    compettition_ = 'Ligue 1'
+                # if 'ligue 1' in sites:
+                #     compettition_ = 'Ligue 1'
 
-                elif 'Liga 1' in sites:
-                    compettition_ = 'La Liga'
+                # elif 'Liga 1' in sites:
+                #     compettition_ = 'La Liga'
 
-                elif 'Premier' in sites:
-                    compettition_ = 'Premier League'
+                # elif 'Premier' in sites:
+                #     compettition_ = 'Premier League'
 
-                elif 'Champions' in sites:
-                    compettition_ = 'Ligue des Champions'                    
+                # elif 'Champions' in sites:
+                #     compettition_ = 'Ligue des Champions'                    
 
-                elif 'Europa' in sites:
-                    compettition_ = 'Europa League'
+                # elif 'Europa' in sites:
+                #     compettition_ = 'Europa League'
 
-                else:
-                    compettition_ = 'Ligue 1'
+                # else:
+                #     compettition_ = 'Ligue 1'
 
 
                 try:
@@ -1332,7 +1335,7 @@ def parseSites(driver):
                     ligue1_games_nested_gamesinfo_unibet_3 =  driver.find_elements_by_xpath('//*[@id="page__competitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]/div[1]/div')
                     ligue1_games_nested_gamesinfo_unibet_4 =  driver.find_elements_by_xpath('//*[@id="page__competitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]')
                     #print('in unibet and collected all ligue one games web element ! ... ')
-                    competition =  compettition_
+                    #competition =  compettition_
 
                     time.sleep(wait_time12)  
 
@@ -1464,7 +1467,7 @@ def parseSites(driver):
     ##            LATEAST TESTING CODE FOR LIVE LIGUE1  ON  ZEBET   
     ######################################################################            
             if  zebet in sites and 'live' in sites :
-                competition =  compettition_
+                #competition =  compettition_
                 date = 'LIVE'
         
             # #     ## NOTE live chgamp lieague hgames  on diff link when live - just normal football  page at top ! :
@@ -1517,7 +1520,8 @@ def parseSites(driver):
             #sites = "https://www.zebet.fr/en/competition/94-premier_league"
             if  zebet in sites and 'live' not in sites:
             # # zebet tree struct to games elements:                                                     
-                print('in zebet ligue1 pre-match parsing .... \n \n')  
+                print('in zebet ' + competition + ' pre-match parsing .... \n \n') 
+                #competition =  compettition_ 
                 try:
                                                                             #//*[@id="event"]/article[1]/div/div/div/div
                     ligue1_games_infozebet = driver.find_elements_by_xpath('//*[@id="event"]/article/div/div/div/div/div') 
@@ -1570,14 +1574,14 @@ def parseSites(driver):
             #/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]
             start_winimax = time.time()
             if winimax in sites :        
-                print('in winimax ligue1 pre-match parsing .... \n \n')   
-
+                print('in winimax ' +   competition  + ' pre-match parsing .... \n \n')   
+                #ompetition   =  compettition_ #split_match_data_str[1]  
                 match_count_wini = 0
                                                                                         
                 ligue1_games_nested_gamesinfo_winimax = driver.find_elements_by_xpath('/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div')                                    
                 ligue1_games_nested_gamesinfo_winimax_2 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div')                                                                    
                 if not  ligue1_games_nested_gamesinfo_winimax:
-                    ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_2                                                                    
+                    ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_2       
                                                                                                                                                                     # #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
                 # TEST _ CHANGE Loop var to the live one here temporarily
                 for matches in ligue1_games_nested_gamesinfo_winimax: #ligue1_games_nested_gamesinfo_winimax_live_footy:  # ligue1_games_nested_gamesinfo_winimax:                 #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
@@ -1621,8 +1625,7 @@ def parseSites(driver):
                             any_errors = False
                             print(" Key  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
                             continue            
-
-                        competition   =  compettition_ #split_match_data_str[1]    
+  
                         try :
                             if longer_info_match:
                                 teamAWinOdds  = float(split_match_data_str[2].replace(',','.'))
@@ -1652,12 +1655,17 @@ def parseSites(driver):
             ## somethin wrong with assumed html in link - think i must navigate all the way from base url with button click and hfers links etc
 
             start_cbet = time.time()  
+            cbet_win_odds_indx  = 4
+            cbet_draw_odds_indx = 5
+            cbet_lose_odds_indx = 6
             #print('time taken to process unibet was = ' + str(start_unibet - end_unibet))
             if cbet in sites :        
                 time.sleep(wait_time12)
                 #time.sleep(wait_time12)     
                 #time.sleep(wait_time12) 
                 #driver.implicitly_wait(13)
+                print('in cbet ' +   competition  + ' pre-match parsing .... \n \n')   
+                #competition  =  compettition_ #split_match_data_str[1]    
                 
                 #WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,'/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul/li')))
                 ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
@@ -1687,7 +1695,7 @@ def parseSites(driver):
                 driver.get(iframe_link)
                 ## Now in the internal links html and can crawl and scrAPE  as per usual
 
-        #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
+            #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
 
                 date = '20 decembre' #unidecode.unidecode('?? ') 
                 #time.sleep(wait_time12)
@@ -1707,10 +1715,10 @@ def parseSites(driver):
 
                     elif 'champions' in leagues.text.lower() and 'champions' in compettition[0]:
                         leagues.click()
-                        print(' league found in Cbet is : ' + str('Champions league -- England') + ' ...') 
+                        print(' league found in Cbet is : ' + str('Champions league ') + ' ...') 
                         break
 
-                    elif 'premier league' in leagues.text.lower() and 'premier ' in compettition[0]:
+                    elif 'premier league' in leagues.text.lower() and 'premier-league' in compettition[0]:
                         leagues.click()
                         print(' league found in Cbet is : ' + str('Premier league -- England') + ' ...') 
                         break
@@ -1720,12 +1728,12 @@ def parseSites(driver):
                         print(' league found in Cbet is : ' + str('Bundesliga - Germany') + ' ...') 
                         break
 
-                    elif 'la liga' in leagues.text.lower() and 'europa' in compettition[0]:
+                    elif 'la liga' in leagues.text.lower() and ( 'laliga' in compettition[0] or 'liga-primera' in compettition[0] or 'lal-iga' in compettition[0]):
                         leagues.click()
                         print(' league found in Cbet is : ' + str('La Liga - Espana !! `') + ' ...') 
                         break
 
-                    elif 'serie a' in leagues.text.lower() and 'serie a' in compettition[0]:
+                    elif 'serie a' in leagues.text.lower() and 'serie-a' in compettition[0]:
                         leagues.click()
                         print(' league found in Cbet is : ' + str('Serie A italia') + ' ...') 
                         break    
@@ -1761,10 +1769,6 @@ def parseSites(driver):
                             print('Key error caught in cbet parsing, continuing ...')
                             continue 
 
-                        competition  =  compettition_ #split_match_data_str[1]    
-                        print(split_match_data_str)
-                        print('\n \n')
-
                         try:
                             teamAWinOdds = split_match_data_str[4].replace(',','.')
                             draw_odds    = split_match_data_str[5].replace(',','.')
@@ -1796,9 +1800,9 @@ def parseSites(driver):
     # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
 
             if sports_bwin in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in sports_bwin ligue1 pre-match prsing .... \n \n')
-                competition_ = 'ligue 1'
-                competition = competition_
+                print('in sports_bwin ' +   competition  + ' pre-match parsing .... \n \n')   
+                #competition   =  compettition_ 
+
                 time.sleep(wait_time12) 
                 #try:
                 time.sleep(wait_time12) 
@@ -1818,11 +1822,7 @@ def parseSites(driver):
                     #all_games =  games.find_elements_by_xpath('//ms-event')
                     time.sleep(wait_time12)
 
-                    print(groups.text + '\n\n')
-
-                    #teams_element = groups.find_element_by_xpath("//div/a")
-                    #odds_element  = groups.find_element_by_xpath("//div/div")
-
+                    #print(groups.text + '\n\n')
                     if '/' in groups.text:
                         bwin_parts = groups.text.split('/')
                         delimit_1 = bwin_parts[0].split('\n')
@@ -1836,7 +1836,6 @@ def parseSites(driver):
                     else:
                         bwin_parts = groups.text
                         delimit_1 = groups.text.split('\n')
-
 
                     #if unidecode.unidecode(date.lower()) not in french_dates_list:
                     #    date = date_ 
@@ -1872,10 +1871,13 @@ def parseSites(driver):
 
             start_parion = time.time()                                          
     # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
+            parion_win_odds_indx  = 3
+            parion_draw_odds_indx = 4
+            parion_lose_odds_indx = 5
             if parionbet in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in parionbet ligue1 pre-match prsing .... \n \n')
-                compettition_ = "ligue1"
-                #try:
+                print('in parionbet ' +   competition   + ' pre-match prsing .... \n \n')
+                #competition = compettition_ 
+
                 time.sleep(wait_time12)
                 # relative path to all upcoming ligue 1 games    
                 #resultParionElements = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/wpsel-app/lib-sport-enligne/div[1]/wpsel-home/div')
@@ -1925,7 +1927,7 @@ def parseSites(driver):
 
                                 date = unidecode.unidecode(split_match_data_str[2])
                                 teams = teamA + ' - ' + teamB                          
-                                competition =  compettition_ 
+                                #competition =  compettition_ 
 
                                 try:
 
@@ -1958,7 +1960,7 @@ def parseSites(driver):
 
                                     date = unidecode.unidecode(split_match_data_str[0])
                                     teams = teamA + ' - ' + teamB                          
-                                    competition =  compettition_                                    
+                                    #competition =  compettition_                                    
 
                                     try:
 
@@ -1982,10 +1984,13 @@ def parseSites(driver):
             start_pmu = time.time() 
             ## canr SEEM TO RUN AT AL WHEN LIVE LIGUE ONE GAMES ARE ON !??                
             #https://paris-sportifs.pmu.fr/pari/competition/169/football/ligue-1-uber-eats%C2%AE
-            if paris_sportifs_pmu[8:26] in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in pmu ligue1 pre-match prsing .... \n \n')
-                competition = "ligue1"
 
+            paris_pmu_win_odds_indx = 1
+            paris_pmu_draw_odds_indx = 2
+            paris_pmu_lose_odds_indx = 3
+            if paris_sportifs_pmu[8:26] in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
+                print('in PMU beting site ' + competition  + ' pre-match prsing .... \n \n')
+                #competition = compettition_ 
                 pmu_loop_counter = 0
 
                 # relative path to all upcoming ligue 1 games    
@@ -2019,7 +2024,7 @@ def parseSites(driver):
 
                     pmu_loop_counter += 1
                     if pmu_loop_counter > 20 :
-                        print('breaking out of crazy pmu loop.. ! lool')
+                        print('breaking out of crazy pmu loop.. ! as it goes on ad infinitum, lool')
                         break
                  
                     matches = games.split('//')            
@@ -2051,7 +2056,8 @@ def parseSites(driver):
 
                         #time.sleep(wait_time12)
                         teams = teamA + ' - ' + teamB
-
+                        init_index_pmu_name = 8
+                        end_index_pmu_name = 26                                               
                         full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
                         full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
                         full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
@@ -2073,7 +2079,7 @@ def parseSites(driver):
     unibet_dict      = defaultdict(list)
     betclic_dict     = defaultdict(list)
     winimax_dict     = defaultdict(list)
-    zebet_dict       = defaultdict(list)
+    zebet_dict       = defaultdict(list) 
     sports_bwin_dict = defaultdict(list)
     france_pari_dict = defaultdict(list)
     parionbet_dict   = defaultdict(list)

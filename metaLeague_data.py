@@ -55,7 +55,7 @@ cbet_premier_league_pre           = 'https://cbet.gg/en/sportsbook/prematch#/pre
 sportifs_pmu_premier_league_pre   = 'https://paris-sportifs.pmu.fr/pari/competition/13/football/premier-league'
 betclic_premier_league_pre        = 'https://www.betclic.fr/football-s1/angl-premier-league-c3'
 
-all_premier_league_sites = [ france_pari_premier_league_pre, unibet_premier_league_pre, zebet_premier_league_pre, winimax_premier_league_pre, passionsports_premier_league_pre, sportifs_pmu_premier_league_pre, betclic_premier_league_pre ] # ,cbet_premier_league_pre
+all_premier_league_sites = [ france_pari_premier_league_pre, unibet_premier_league_pre, zebet_premier_league_pre, winimax_premier_league_pre, passionsports_premier_league_pre, sportifs_pmu_premier_league_pre, betclic_premier_league_pre, cbet_premier_league_pre]
 
 # ###  *********************************** La Liga  lINKS *****************************
 
@@ -69,7 +69,7 @@ cbet_la_liga_pre           = 'https://cbet.gg/en/sportsbook/prematch#/prematch'
 sportifs_pmu_la_liga_pre   = 'https://paris-sportifs.pmu.fr/pari/competition/322/football/la-liga'
 betclic_la_liga_pre        = 'https://www.betclic.fr/football-s1/espagne-liga-primera-c7'
 
-all_la_liga_sites = [  france_pari_la_liga_pre , unibet_la_liga_pre, zebet_la_liga_pre, winimax_la_liga_pre , passionsports_la_liga_pre, sportifs_pmu_la_liga_pre, betclic_la_liga_pre ] #, cbet_la_liga_pre
+all_la_liga_sites = [  france_pari_la_liga_pre , unibet_la_liga_pre, zebet_la_liga_pre, winimax_la_liga_pre , passionsports_la_liga_pre, sportifs_pmu_la_liga_pre, betclic_la_liga_pre, cbet_la_liga_pre]
 
 # ###  *********************************** Serie A'   lINKS *****************************
 
@@ -82,7 +82,7 @@ cbet_serie_a_pre            = 'https://cbet.gg/en/sportsbook/prematch#/prematch'
 sportifs_pmu_serie_a_pre    = 'https://paris-sportifs.pmu.fr/pari/competition/308/football/italie-s%C3%A9rie'
 betclic_serie_a_pre         = 'https://www.betclic.fr/football-s1/italie-serie-a-c6'
 
-serie_a_links = [ france_pari_serie_a_pre, unibet_serie_a_pre, zebet_serie_a_pre, winimax_serie_a_pre, sportifs_pmu_serie_a_pre, betclic_serie_a_pre ] # ,cbet_serie_a_pre, passionsports_serie_a_pre
+serie_a_links = [ france_pari_serie_a_pre, unibet_serie_a_pre, zebet_serie_a_pre, winimax_serie_a_pre, sportifs_pmu_serie_a_pre, betclic_serie_a_pre, cbet_serie_a_pre] #, passionsports_serie_a_pre
 
 # ###  *********************************** Bundesliga  lINKS *****************************
 
@@ -96,7 +96,7 @@ cbet_bundesliga_pre           = 'https://cbet.gg/en/sportsbook/prematch#/prematc
 betclic_bundersliga_pre       = 'https://www.betclic.fr/football-s1/allemagne-bundesliga-c5'
 sportifs_pmu_bundesliga_pre   = 'https://paris-sportifs.pmu.fr/pari/competition/32/football/bundesliga'
 
-bundesliga_links = [ france_pari_bundesliga_pre, unibet_bundesliga_pre, zebet_bundesliga_pre, winimax_bundesliga_pre, passionsports_bundesliga_pre, betclic_bundersliga_pre, sportifs_pmu_bundesliga_pre] # ,cbet_bundesliga_pre
+bundesliga_links = [ france_pari_bundesliga_pre, unibet_bundesliga_pre, zebet_bundesliga_pre, winimax_bundesliga_pre, passionsports_bundesliga_pre, betclic_bundersliga_pre, sportifs_pmu_bundesliga_pre ,cbet_bundesliga_pre]
 
 ###  *********************************** LIGUE 1  lINKS *****************************
 
@@ -334,6 +334,54 @@ la_Liga_commonName_mapping = { 'Alavés' : 'alaves',
 ,'sevilla fc': 'sevilla'
 ,'ath. bilbao': 'athletic bilbao'
 ,'atl. madrid' : 'atheletico madrid'}
+
+
+
+serie_a_commonName_mapping = {
+
+'benevento' : 'benevento',
+'bologna'   : 'bologna','bologne' : 'bologna',
+'cagliari'  : 'cagliari',
+'crotone'   : 'crotone',
+'fiorentina': 'fiorentina',
+'genoa'     : 'genoa',
+'hellas verona': 'verona','hellas verone': 'verona','verona': 'verona','verone': 'verona',
+'parma'    : 'parma' ,'parme' : 'parma' ,'parme fc' : 'parma' ,
+'sampdoria': 'sampdoria' ,
+'sassuolo' : 'sassuolo' ,
+'spezia'   : 'spezia' , 'spezia calcio' : 'spezia' ,
+'torino'   : 'torino' ,
+'udinese'  : 'udinese',
+'inter milan' : 'inter milan','internatzionale': 'inter milan','inter milano':'inter milan'    
+# :,
+# :,
+# :,
+# :,
+}
+
+
+bundesliga_commonName_mapping = {
+
+'fc augsburg'   : 'Augsburg','fc augsbourg'   : 'Augsburg', 'augsbourg'   : 'Augsburg',
+'hertha bsc'   : 'hertha berlin',
+'union berlin' : 'union berlin' ,
+'arminia bielefeld' : 'arminia bielefeld',
+'werder bremen' : 'werder bremen', 'werder breme' : 'werder bremen',
+'borussia dortmund' : 'borussia dortmund',
+'eintracht frankfurt' : 'frankfurt', 'eintracht francfort' : 'frankfurt', 'francfort' : 'frankfurt',
+'sc freiburg' : 'freiburg', 'sc freibourg' :'freiburg', 'freibourg':'freiburg','fribourg':'freiburg',
+'1899 hoffenheim'	    : 'hoffenheim',
+'fc köln'	   : 'cologne','fc cologne'	: 'cologne', 'cologne' : 'cologne',
+'rb leipzig' : 'leipzig',
+'bayer leverkusen' : 'bayer leverkusen','leverkusen' : 'bayer leverkusen',
+'mainz 05'	       : 'mainz',
+'borussia mönchengladbach' : 'monchengladbach' ,
+'bayern munich' : 'bayern munich',
+'mayence' : 'mayence',
+'schalke 04'	  : 'shalke',
+'vfb stuttgart' : 'stuttgart',
+'vfl wolfsburg' : 'wolfsburg', 'wolfsburg' : 'wolfsburg','wolfsbourg' : 'wolfsburg'}
+
 # 
 # 
 # 
@@ -364,7 +412,7 @@ comon_team_maping_europa = {'wolfsberg' : 'wolfsberg' , 'wolfsberg fc' : 'wolfsb
 'real sociedad' : 'real sociedad' , 'manchester united' :  'manchester united',
 'benfica'  : 'benfica' , 'sl benfica'  : 'benfica', 'benfica lisbon'  : 'benfica', 'arsenal' : 'arsenal', 'arsenal fc' : 'arsenal',               
 'crvena zvezda' : 'crvena zvezda' , 'red star belgrade' : 'crvena zvezda', 'etoile rouges belgrade' : 'crvena zvezda',
-'ac milan' :  'ac milan','ac milano' :  'ac milan', 'milan ac' :  'ac 9milan',               
+'ac milan' :  'ac milan','ac milano' :  'ac milan', 'milan ac' :  'ac milan',               
 'antwerp'  : 'antwerp' , 'royal antwerp fc'  : 'antwerp', 'antwerp fc'  : 'antwerp', 'royal antwerp'  : 'antwerp', 'anvers'  : 'antwerp', 'rangers' : 'rangers',
  'rangers fc' : 'rangers', 'glasgow rangers fc' : 'rangers', 'glasgow rangers' : 'rangers',              
 'slavia praha'  : 'slavia prague' , 'slavia prague'  : 'slavia prague',
@@ -391,12 +439,12 @@ comon_team_maping_europa = {'wolfsberg' : 'wolfsberg' , 'wolfsberg fc' : 'wolfsb
  
 ## premiership
 
-EPL_commonName_mapping = {'man utd': 'manchester united','manchesterutd': 'manchester united','man city':'manchester city','manchester city':'manchester city','sheff utd':'sheffield united','sheffield utd':'sheffield united' \
-        ,'west bromwich albion':'west brom','brighton & hove albion':'brighton','wolverhampton wanderers':'wolves'}
-
-
-commonName_mapping = {'man utd': 'manchester united','manchester utd': 'manchester united', 'manchester united': 'manchester united', 'man city':'manchester city','manchester city':'manchester city','sheff utd':'sheffield united','sheffield utd':'sheffield united' \
-    , 'sheffield united': 'sheffield united','west bromwich albion':'west brom', 'west bromwich':'west brom', 'brighton & hove albion':'brighton','wolverhampton wanderers':'wolves','wolverhampton':'wolves','chelsea': 'chelsea', 'chelsea fc': 'chelsea','liverpool' : 'liverpool', 'liverpool fc': 'liverpool'}
+EPL_commonName_mapping = {'man utd': 'manchester united','manchester utd': 'manchester united','man city':'manchester city','manchester city':'manchester city','sheff utd':'sheffield united','sheffield utd':'sheffield united' \
+        ,'west bromwich albion':'west brom','brighton & hove albion':'brighton','wolverhampton wanderers':'wolves',
+        'everton' : 'everton', 'west ham' : 'west ham' , 'tottenham' : 'tottenham' , 'newcastle united': 'newcastle' , 'newcastle': 'newcastle' ,'crystal palace' : 'crystal palace' , 'southampton' :  'southampton',
+        'fulham' : 'fulham'  , 'aston villa': 'villa', 'villa' : 'villa', 'leeds united' : 'leeds' , 'leeds' : 'leeds'
+        , 'arsenal' : 'arsenal' ,' burnley fc': 'burnley', 'burnley' : 'burnley', 'manchester united': 'manchester united'
+        , 'west bromwich':'west brom','wolverhampton':'wolves','chelsea': 'chelsea', 'chelsea fc': 'chelsea','liverpool' : 'liverpool', 'liverpool fc': 'liverpool'}
 
 
 # commonPremLeagueTeamName_mapper = {  Crystal Palace
