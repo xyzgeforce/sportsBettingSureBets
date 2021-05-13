@@ -15,6 +15,9 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException
 
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import Select,WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 import itertools
 import sys,os
 #from scraper_api import ScraperAPIClient
@@ -61,6 +64,9 @@ my_phone_number          = '0014372468105'
 main_client_phone_number = '0033609590209'
 courrouxbro1_client_phone_number = '0033647228992'
 courrouxbro2client_phone_number  = '0033620858827'
+## TODO : IMSERT HUGO'S PROPER NO. !!!!!
+
+client_hugo = '003366784209'
 # define global init 'surebet' condition value (note by default any bet will not be a surebet given its > 1.0)
 
 
@@ -373,6 +379,13 @@ def send_sms_alert_forfinal_round_ligue1():
         client.publish(PhoneNumber=courrouxbro1_client_phone_number,Message=message)
         client.publish(PhoneNumber=courrouxbro2client_phone_number,Message=message)
 
+
+        client.publish(PhoneNumber=client_maxime,Message=message)
+        client.publish(PhoneNumber=client_groco,Message=message)
+        client.publish(PhoneNumber=client_hugo,Message=message)
+        client.publish(PhoneNumber=client_theo,Message=message)
+
+
     except botocore.exceptions.ParamValidationError as e:
         print("Parameter validation error: %s" % e)
         return False
@@ -389,6 +402,30 @@ def send_sms_alert_forfinal_round_ligue1():
 
     return True
 
+
+def send_sms_alert_tennis(stuff='betclic', players_names= 'RAFA NADAL rOGERfEDERER', tourny_name = 'ATP Rome'):
+
+    message = "Tournament : " +  tourny_name  + " \n Players : \t" + players_names   + " odds are now on betclic's site ! :)"
+
+    try:
+        #client.publish(PhoneNumber=main_client_phone_number,Message=message)
+        client.publish(PhoneNumber=my_phone_number,Message=message)
+        # client.publish(PhoneNumber=courrouxbro1_client_phone_number,Message=message)
+        # client.publish(PhoneNumber=courrouxbro2client_phone_number,Message=message)
+        # client.publish(PhoneNumber=client_hugo,Message=message)
+
+    except botocore.exceptions.ParamValidationError as e:
+        print("Parameter validation error: %s" % e)
+        return False
+    except botocore.exceptions.ClientError as e:
+        print("Unexpected error: %s" % e)
+        return False
+    finally:
+        print('Error in the text SNS messaging not picked up :( ...')
+        return False
+
+
+    return True
 
 
 tot_parionbet   = 0.0
@@ -448,12 +485,7 @@ def parseTenisSites(driver):
 
         #center_scroller_element = driver.find_element_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div')
     
-        # try:
-        #     tennis_games_per_panel = center_scroller_element.find_elements_by_class_name('sports-events-event')
-        # except StaleElementReferenceException:
-        #     print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-        #     #exit(1)
-        #     return False
+       
 
         # for tennis_game in tennis_games_per_panel:
 
@@ -479,51 +511,82 @@ def parseTenisSites(driver):
         #             print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
         #             continue
 
-        center_scroller_element = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-all-offer/div/bcdk-vertical-scroller/div/div[2]/div/div/sports-events-event')
+        if len(unique_match_dict) >= 6 :
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+            scrolled_already = False
+            time.sleep(3)  
+
+        try:
+            center_scroller_element = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-all-offer/div/bcdk-vertical-scroller/div/div[2]/div/div/sports-events-event')
+            center_scroller_element_tag = driver.find_elements_by_tag_name('sports-events-event')
+
+        except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
+            any_errors = False
+            print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  first web ele,ment..... ")
+            continue
+
+        if not center_scroller_element:
+            center_scroller_element = center_scroller_element_tag
+
+        options.add_argument("start-maximized")
+        options.add_argument("user-agent= 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_6) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.698.0 Safari/534.24'")
+        driver_inner = webdriver.Chrome(options=options, executable_path=DRIVER_PATH) #, service_args=["--verbose", "--log-path=D:\\qc1.log"])
+        scrolled_already = True
         for tennis_game in center_scroller_element:
 
+            if len(unique_match_dict) == 6 and scrolled_already:
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+                scrolled_already = False
+                time.sleep(3)  
+
             event_element = tennis_game
-            event_element_name_str = event_element.text
+            try:
+                event_element_name_str = event_element.text
+            except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
+                any_errors = False
+                print(" StaleElementReferenceException Error in Betclic site -- when trying to grab games elements ..... ")
+                continue
+
             if 'atp' in event_element_name_str.lower():
 
                 try:
                     #event_element.find_element_by_xpath('.//a').click()
-                    time.sleep(2)
+                    #time.sleep(1)
                     ## need to get this click to work really
                     #event_element.find_element_by_xpath('.//a').click()
                     link = event_element.find_element_by_xpath('.//a').get_attribute('href')
 
                     game_info = event_element.find_element_by_xpath('.//a/div').text
                     tourny_n_players  = game_info.split('\n')
-                    tourny_name       = tourny_n_players[0]
-                    players_names     = str(tourny_n_players[-3]) + str(tourny_n_players[-1])
 
-                    #driver.quit()
+                    if len(tourny_n_players) >= 3: 
+                        tourny_name       = tourny_n_players[0]
+                        players_names     = str(tourny_n_players[-3]) + ' ' + str(tourny_n_players[-1])
 
-                    unique_match_dict[ tourny_name + players_names ] = True
-
-                    options.add_argument("start-maximized")
-                    options.add_argument("user-agent= 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_6) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.698.0 Safari/534.24'")
-                    driver_inner = webdriver.Chrome(options=options, executable_path=DRIVER_PATH, service_args=["--verbose", "--log-path=D:\\qc1.log"])
-
+                    if (tourny_name + players_names) not in unique_match_dict.keys():
+                        unique_match_dict[ tourny_name + players_names ] = True  
+                    
+                    #start_timer = time.time()
                     driver_inner.get(link)
-                    time.sleep(2)
-                        
+                    #end_timer = time.time()
+                    #time.sleep(1)
+                    #print('time taken in getting new link in driver is = ' + str(end_timer - start_timer))        
                     #time.sleep(8)
                     match_beting_fields = driver_inner.find_elements_by_xpath('//*[@id="matchHeader"]/bcdk-chips-scroller/div/div/div/div')
-                    
-                except:
+
+                except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
+                    any_errors = False
                     print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-                    return False
+                    continue
 
                 try:
                     for bet_types in match_beting_fields:
                         bet_type_name = bet_types.text
-                        print(bet_type_name)
+                        #print(bet_type_name)
 
                         if 'aces' in bet_type_name.lower() and unique_match_dict[ tourny_name + players_names ] :
                             unique_match_dict[ tourny_name + players_names ]  = False
-                            #send_sms_alert(betclic, players_names, tourny_name) 
+                            send_sms_alert_tennis('betclic', players_names, tourny_name) 
 
                 except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
                     any_errors = False
@@ -534,7 +597,6 @@ def parseTenisSites(driver):
     return True
 
 site_betclci_soccer_link ='https://www.betclic.fr/football-s1/ligue-1-uber-eats-c4'
-
 
 TEST_MODE = False #True
 sender =  'godlikester@gmail.com'
@@ -559,9 +621,13 @@ def check_for_final_ligue_1_rounds_odds():
 
         global date_time 
         print('\n next iteration -- @ time = ' + date_time + ' -- in ' + str(loop_coumter) + ' iteration -- boop ... \n \n' )
-    
-        driver.get(site_betclci_soccer_link)
-        driver.maximize_window()
+        try:    
+            driver.get(site_betclci_soccer_link)
+            driver.maximize_window()
+        except (StaleElementReferenceException, NoSuchElementException, InvalidSessionIdException) :
+            any_errors = False
+            print("Error  caught in your BETCLIC final rpound detect. func.  -- initial list games frabber  :( .....")
+            continue
 
         # grab the day/month/.year from today's date and store it
         todays_date = str(datetime.datetime.today()).split()[0] 
@@ -616,11 +682,47 @@ def check_for_final_ligue_1_rounds_odds():
         
 
         #center_scroller_element = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-all-offer/div/bcdk-vertical-scroller/div/div[2]/div/div/sports-events-event')
-                       
-        ligue_1_finalrounds_list = driver.find_elements_by_xpath('//html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/div/sports-events-event')
+        try:               
+            ligue_1_finalrounds_list = driver.find_elements_by_xpath('//html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/div/sports-events-event')
+            ligue_1_finalrounds_list2 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/div/sports-events-list/bcdk-vertical-scroller/div/div[2]/div/div/div')                          
+
+            ligue_1_finalrounds_list2 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/div/sports-events-list/bcdk-vertical-scroller/div/div[2]/div/div/div')
+                                                                  #'/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/div/sports-events-list/bcdk-vertical-scroller/div/div[2]/div/div'
+                                                                        
+            ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
+            ## use this when generalizing leagues ...
+            #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')    
+            ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
+        except (StaleElementReferenceException, NoSuchElementException, InvalidSessionIdException) :
+            any_errors = False
+            print("Error  caught in your BETCLIC final rpound detect. func.  -- initial list games frabber  :( .....")
+            continue
+        
+
+        center_scroller_element_tag = driver.find_elements_by_tag_name('sports-events-event')
+        # champs league link n web elements location
+        #ligue1_games_info_betclic_champsL = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div')
+
+        tag_web_element_one_too_deep_flag = False
+        if not ligue_1_finalrounds_list:
+            ligue_1_finalrounds_list = ligue_1_finalrounds_list2
+            if not ligue_1_finalrounds_list2:
+                ligue_1_finalrounds_list = center_scroller_element_tag
+                tag_web_element_one_too_deep_flag = True
+                if not center_scroller_element_tag:
+                    ligue_1_finalrounds_list = ligue1_games_info_betclic
+                    tag_web_element_one_too_deep_flag = False
+                    if not  ligue1_games_info_betclic :
+                        ligue_1_finalrounds_list =  ligue1_games_info_betclic_1
+                        tag_web_element_one_too_deep_flag = False
+        
         for games in ligue_1_finalrounds_list:
 
-            game_event_info = games.find_element_by_xpath('a/div/sports-events-event-info')
+            if tag_web_element_one_too_deep_flag:
+                game_event_info = games.find_element_by_xpath('.//a/div/sports-events-event-info')
+            #game_event_info = games.find_element_by_xpath('a/div/sports-events-event-info')
+            else:
+                game_event_info = games.find_element_by_xpath('.//sports-events-event/a/div/sports-events-event-info')
             try:
 
                 # if len(center_scroller_element) > num_pre_final_round_games:
@@ -628,36 +730,72 @@ def check_for_final_ligue_1_rounds_odds():
                 #     #send_sms_alert(betclic, players_names, tourny_name) 
                 
                 date_str = game_event_info.text
-
                 print('date of game is ' + date_str)
 
-                if '23/05/2021' in date_str  and ( '2021-05-09' in todays_date or '2021-05-10' in todays_date ) :  
-
-                    try:
-                        smtpObj = smtplib.SMTP_SSL("smtp.gmail.com",465)
-                        smtpObj.login("godlikester@gmail.com", "Pollgorm1")
-                        #smtpObj.login("keano16@dcrowleycodesols.com", "Pollgorm9")
-                        smtpObj.sendmail(sender, receivers, message)         
-                        print("Successfully sent email")
-                        
-
-                        #FP1 = open(surebets_Done_list_textfile,'a')
-                        #FP1.write(message + '\n')
-                        #FP1.close()
-
-                        successFlag = True
-                    except SMTPException:
-                        print("Error: unable to send email")
-                        pass
+                if '16/05/2021' in date_str  and ( '2021-05-11' in todays_date or '2021-05-12' in todays_date or '2021-05-13' in todays_date or '2021-05-14' in todays_date or '2021-05-15' in todays_date  or '2021-05-16' in todays_date or '2021-05-17' in todays_date) :  
                     print('FOUND odds coming up !, sending sms to alert lads')
-                    #ret_val_of_ligue1round38_alert = send_sms_alert_forfinal_round_ligue1() 
-                    #print('just sent sms , return value =  ' + str(ret_val_of_ligue1round38_alert) + ' now exitingf thw infinite loop and program ..')
-                    #exit(1)
+                    ret_val_of_ligue1round38_alert =  send_sms_alert_forfinal_round_ligue1() 
+                    print('just sent sms , return value =  ' + str(ret_val_of_ligue1round38_alert) + ' now exitingf thw infinite loop and program ..')
+                    fej = 0
+                    return True
 
-            except KeyError:
+            except (KeyError,NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException) as err:
                 any_errors = False
                 print("Error  caught in your BETCLIC final rpound detect. func.  -- keyError in team mapper  :( .....")
                 continue
+
+##  TODO: BETTER VERSION OF SCRAPING 
+
+        # try:
+        #     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME,'sports-events-list')))
+        #     tennis_games_per_panel = center_scroller_element.find_element_by_tag_name('sports-events-list')
+        #     time.sleep(1)
+        #     all_ligue1_games = tennis_games_per_panel.find_elements_by_tag_name('sports-events-levent')
+        # except StaleElementReferenceException:
+        #     print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
+        #     #exit(1)
+        #     return False
+
+        # for game in all_ligue1_games:
+
+        #     game_event_info = game.find_element_by_xpath('.//a/div/sports-events-event-info')
+        #     try:
+
+        #         # if len(center_scroller_element) > num_pre_final_round_games:
+        #         #     unique_match_dict[ tourny_name + players_names ]  = False
+        #         #     #send_sms_alert(betclic, players_names, tourny_name) 
+                
+        #         date_str = game_event_info.text
+
+        #         print('date of game is ' + date_str)
+
+        #         if '23/05/2021' in date_str  and ( '2021-05-11' in todays_date or '2021-05-12' in todays_date ) :  
+
+        #             try:
+        #                 smtpObj = smtplib.SMTP_SSL("smtp.gmail.com",465)
+        #                 smtpObj.login("godlikester@gmail.com", "Pollgorm1")
+        #                 #smtpObj.login("keano16@dcrowleycodesols.com", "Pollgorm9")
+        #                 smtpObj.sendmail(sender, receivers, message)         
+        #                 print("Successfully sent email")
+                        
+        #                 #FP1 = open(surebets_Done_list_textfile,'a')
+        #                 #FP1.write(message + '\n')
+        #                 #FP1.close()
+
+        #                 successFlag = True
+        #             except SMTPException:
+        #                 print("Error: unable to send email")
+        #                 pass
+        #             print('FOUND odds coming up !, sending sms to alert lads')
+        #             #ret_val_of_ligue1round38_alert = send_sms_alert_forfinal_round_ligue1() 
+        #             #print('just sent sms , return value =  ' + str(ret_val_of_ligue1round38_alert) + ' now exitingf thw infinite loop and program ..')
+        #             #exit(1)
+
+        #     except KeyError:
+        #         any_errors = False
+        #         print("Error  caught in your BETCLIC final rpound detect. func.  -- keyError in team mapper  :( .....")
+        #         continue
+
 
     return True
 
@@ -668,14 +806,19 @@ if __name__ == '__main__':
     argv = sys.argv
     DEBUG_OUTPUT  = False
 
+    #print(' len(argv)  = ' + str(len(argv) ))
 
-    #
-    # retval2 = check_for_final_ligue_1_rounds_odds() 
+    if 'football_ligue1_round38' in str(argv[-1]): 
+        retval2 = check_for_final_ligue_1_rounds_odds() 
 
-    retval2 = check_for_tennis_value_bets()
-    
-    print(' len(argv)  = ' + str(len(argv) ))
-    
+    elif 'tennis' in str(argv[-1]):    
+        retval2 = check_for_tennis_value_bets() 
+
+    else:
+        print('issue with cmd line entry -- usage : "python ./sports_bettor_tennis.py tennis" or "python ./sports_bettor_tennis.py football_ligue1_round38"  please ...')
+        exit(1)
+
+
     #schtake = 1000
     #retval2 = check_for_sure_bets(float(schtake)) #argv[1]))
 
