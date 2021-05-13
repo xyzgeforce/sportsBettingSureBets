@@ -448,6 +448,7 @@ def parseTenisSites(driver):
     
         driver.get(betclic_tenis_link)
         driver.maximize_window()
+        driver.refresh()
         #igue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]/sports-tile[27]'  /html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]/sports-tile[27]'              
         #SPORTS LIST LINK :  /html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]         
         
@@ -634,6 +635,8 @@ def check_for_final_ligue_1_rounds_odds():
         
         date_time = str(datetime.datetime.today())
 
+        driver.refresh()
+
         # todays_date.replace('-','/')
         # todays_date =  todays_date.split('-')
 
@@ -732,7 +735,7 @@ def check_for_final_ligue_1_rounds_odds():
                 date_str = game_event_info.text
                 print('date of game is ' + date_str)
 
-                if '16/05/2021' in date_str  and ( '2021-05-11' in todays_date or '2021-05-12' in todays_date or '2021-05-13' in todays_date or '2021-05-14' in todays_date or '2021-05-15' in todays_date  or '2021-05-16' in todays_date or '2021-05-17' in todays_date) :  
+                if '23/05/2021' in date_str  and ( '2021-05-11' in todays_date or '2021-05-12' in todays_date or '2021-05-13' in todays_date or '2021-05-14' in todays_date or '2021-05-15' in todays_date  or '2021-05-16' in todays_date or '2021-05-17' in todays_date) :  
                     print('FOUND odds coming up !, sending sms to alert lads')
                     ret_val_of_ligue1round38_alert =  send_sms_alert_forfinal_round_ligue1() 
                     print('just sent sms , return value =  ' + str(ret_val_of_ligue1round38_alert) + ' now exitingf thw infinite loop and program ..')
@@ -805,7 +808,7 @@ if __name__ == '__main__':
 
     argv = sys.argv
     DEBUG_OUTPUT  = False
-
+    
     #print(' len(argv)  = ' + str(len(argv) ))
 
     if 'football_ligue1_round38' in str(argv[-1]): 
