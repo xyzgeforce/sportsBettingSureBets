@@ -408,11 +408,11 @@ def send_sms_alert_tennis(stuff='betclic', players_names= 'RAFA NADAL rOGERfEDER
     message = "Tournament : " +  tourny_name  + " \n Players : \t" + players_names   + " odds are now on betclic's site ! :)"
 
     try:
-        #client.publish(PhoneNumber=main_client_phone_number,Message=message)
+        client.publish(PhoneNumber=main_client_phone_number,Message=message)
         client.publish(PhoneNumber=my_phone_number,Message=message)
-        # client.publish(PhoneNumber=courrouxbro1_client_phone_number,Message=message)
-        # client.publish(PhoneNumber=courrouxbro2client_phone_number,Message=message)
-        # client.publish(PhoneNumber=client_hugo,Message=message)
+        client.publish(PhoneNumber=courrouxbro1_client_phone_number,Message=message)
+        client.publish(PhoneNumber=courrouxbro2client_phone_number,Message=message)
+        client.publish(PhoneNumber=client_hugo,Message=message)
 
     except botocore.exceptions.ParamValidationError as e:
         print("Parameter validation error: %s" % e)
