@@ -66,7 +66,10 @@ courrouxbro1_client_phone_number = '0033647228992'
 courrouxbro2client_phone_number  = '0033620858827'
 ## TODO : IMSERT HUGO'S PROPER NO. !!!!!
 
-client_hugo = '003366784209'
+client_hugo = '0033619939933'
+client_theo = '0033695924416'
+client_groco = '0033672457510'
+client_maxime = '0033675897619'
 # define global init 'surebet' condition value (note by default any bet will not be a surebet given its > 1.0)
 
 
