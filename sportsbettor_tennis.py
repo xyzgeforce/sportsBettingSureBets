@@ -809,12 +809,12 @@ if __name__ == '__main__':
     argv = sys.argv
     DEBUG_OUTPUT  = False
     
-    #print(' len(argv)  = ' + str(len(argv) ))
+    print(' len(argv)  = ' + str(argv[1] ))
 
-    if 'football_ligue1_round38' in str(argv[-1]): 
+    if 'football_ligue1_round38' in str(argv[1]): 
         retval2 = check_for_final_ligue_1_rounds_odds() 
 
-    elif 'tennis' in str(argv[-1]):    
+    elif 'tennis' in str(argv[1]):    
         retval2 = check_for_tennis_value_bets() 
 
     else:
