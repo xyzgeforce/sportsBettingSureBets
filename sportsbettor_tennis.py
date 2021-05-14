@@ -452,68 +452,6 @@ def parseTenisSites(driver):
         driver.get(betclic_tenis_link)
         driver.maximize_window()
         driver.refresh()
-        #igue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]/sports-tile[27]'  /html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]/sports-tile[27]'              
-        #SPORTS LIST LINK :  /html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]         
-        
-        # sports list element :
-        #/html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]           
-        
-        #tennis_element = driver.find_element_by_class_name('sportList_list')                                   
-        
-        # sportList_element = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/sports-left-menu/div/sports-list-menu/sports-list/div/div[2]/sports-tile')
-        # for panels in sportList_element:
-        #     try:
-        #        sport_name_per_panel = panels.find_element_by_class_name('sportlist_name').text
-        #     except StaleElementReferenceException:
-        #        print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-        #        continue  
-
-        #     if 'Tennis' in sport_name_per_panel:
-        #         sport_name_per_panel = panels.find_element_by_xpath('.//sports-details/div/sports-competition-list/div').text
-        #         if 'ATP' in sport_name_per_panel:
-        #             atp_events_list = panels.find_elements_by_xpath('.//sports-details/div/sports-competition-list/div/sports-tile')
-        #     else:
-        #         continue        
-
-        #     for event in atp_events_list:
-        #         print('Found ATP event number i ...')
-
-        #         if 'ATP' in event.text:
-    
-        #             checkbox_parent = event.find_element_by_xpath(".//a/sports-multi-competitions-checkbox/div/label/input")
-        #             tick_return_val = checkbox_parent.click()
-        #             event.click() #find_element_by_xpath('.//a').       
-
-        #             #block-link-302 > sports-multi-competitions-checkbox > div
-        
-
-        #center_scroller_element = driver.find_element_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div')
-    
-       
-
-        # for tennis_game in tennis_games_per_panel:
-
-        #     event_element = tennis_game.find_element_by_xpath('../a')
-        #     event_element_name_str = event_element.get_attribute('href').text
-        #     if 'atp' in event_element_name_str.lower():
-
-        #         try:
-        #             event_element.click()
-        #         except:
-        #             print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-        #             #exit(1)
-        #             return False
-
-        #         ## !!! LIVE games change to be done as swmn here...
-        #         ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-        #         # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
-        #         try:
-        #             teamA = team_names_maping[unidecode.unidecode(info_per_match[1] + info_per_match[2]).lower().strip() ]
-        #             teamB = team_names_maping[unidecode.unidecode(info_per_match[9] + info_per_match[10]).lower().strip()]
-        #         except KeyError:
-        #             any_errors = False
-        #             print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
-        #             continue
 
         if len(unique_match_dict) >= 6 :
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
@@ -551,7 +489,7 @@ def parseTenisSites(driver):
                 print(" StaleElementReferenceException Error in Betclic site -- when trying to grab games elements ..... ")
                 continue
 
-            if 'atp' in event_element_name_str.lower():
+            if 'atp' in event_element_name_str.lower() and 'doubles' not in event_element_name_str.lower() :
 
                 try:
                     #event_element.find_element_by_xpath('.//a').click()
@@ -562,6 +500,10 @@ def parseTenisSites(driver):
 
                     game_info = event_element.find_element_by_xpath('.//a/div').text
                     tourny_n_players  = game_info.split('\n')
+
+
+                    if str(tourny_n_players[-3]).isnumeric() or str(tourny_n_players[-1]).isnumeric() :
+                        continue
 
                     if len(tourny_n_players) >= 3: 
                         tourny_name       = tourny_n_players[0]
@@ -639,52 +581,6 @@ def check_for_final_ligue_1_rounds_odds():
         date_time = str(datetime.datetime.today())
 
         driver.refresh()
-
-        # todays_date.replace('-','/')
-        # todays_date =  todays_date.split('-')
-
-        # if len(date_str_spliton_dashes) >= 3:
-        #     new_date_str = date_str_spliton_dashes[-1] + '-' + date_str_spliton_dashes[-2] + '-' + date_str_spliton_dashes[0]
-        # else:
-        #     print("Error in parsing todays date ! fix quick fpor d lads for final ligue one round thingy !! :(")
-        #     continue
-                                                  
-    
-        #ligue_1_finalrounds_list = driver.find_elements_by_xpath('//html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/div')
-
-        #ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
-        
-        
-        ## use this when generalizing leagues ...                   '/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/div'
-        #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')           # ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
-        
-
-        # # champs league link n web elements location
-        # ligue1_games_info_betclic_champsL = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div')
-
-        # #competition = compettition_
-        # second_route = False
-
-        # if not ligue1_games_info_betclic and not ligue1_games_info_betclic_1:
-        #     second_route = True
-
-        # ## A whole new branch of code - relating to a change I  noticed in Betclic page-parsing since 01/02/2021
-        # if second_route:
-
-        # ## !! Change this     
-        #     gen_games_info_betclic = ligue1_games_info_betclic_1
-            
-        #     if LEAGUE_FLAG == 'Champions':
-
-        #         gen_games_info_betclic = ligue1_games_info_betclic_champsL
-
-        #     for panels in gen_games_info_betclic:
-
-        #         try:
-        #             games_per_panel = panels.find_elements_by_xpath('.//app-event/div/a/div/div')
-        #         except StaleElementReferenceException:
-        #             print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-        #             continue  
         
 
         #center_scroller_element = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-all-offer/div/bcdk-vertical-scroller/div/div[2]/div/div/sports-events-event')
@@ -812,7 +708,7 @@ if __name__ == '__main__':
     argv = sys.argv
     DEBUG_OUTPUT  = False
     
-    print(' len(argv)  = ' + str(argv[1] ))
+    #print(' len(argv)  = ' + str(argv[1] ))
 
     if 'football_ligue1_round38' in str(argv[1]): 
         retval2 = check_for_final_ligue_1_rounds_odds() 
@@ -824,53 +720,4 @@ if __name__ == '__main__':
         print('issue with cmd line entry -- usage : "python ./sports_bettor_tennis.py tennis" or "python ./sports_bettor_tennis.py football_ligue1_round38"  please ...')
         exit(1)
 
-
-    #schtake = 1000
-    #retval2 = check_for_sure_bets(float(schtake)) #argv[1]))
-
-## TEST OOIF SEND MAIL for gen sure
-
-    #W_1 = 'Home team (1st team name on the betting card) to win'
-    #W_2 = 'Away team (2nd team name on the betting card) to win'
-    #D   = 'A draw between the team in the 90 minutes'
-    #bookie_1 = unibet
-    #bookie_2 = winimax
-    #bookie_3 = betclic
-    #bookie_one_outcome = W_1
-    #bookie_2_outcome   = D
-    #teamA = 'paris sg'
-    #teamB = 'lille'
-    #date  = 'janvier, 16  2020'
-    #competition = 'ligue1' 
-
-    #send_mail_alert_gen_socer_surebet(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,date,competition)
-
-    # if len(argv) >= 2 :
-
-    #     if len(argv) == 8 :
-
-    #         retVal = odds_alert_system(oddType= int(argv[1]), expect_oddValue= float(argv[2]), teamA= argv[3], teamB= argv[4], date= argv[5], competition= argv[6], Bookie1_used= argv[7])
-
-    #     elif  len(argv) == 2 and argv[-1] == 'tennis':
-
-    #         retval2 = check_for_tennis_value_bets()
-
-    #     elif  len(argv) == 2 and argv[-1] == 'ligue1_bets_appear':
-
-    #         retval2 = check_for_final_ligue_1_rounds_odds() 
-
-    #     else:
-
-    #         #print("usage:  please indicate with  0 or a 1 in the first cmd line argument to the program wherether you wish to include debugging output prints in it's run or not; 0/1 corresponding to no/yes....")
-    #         print("Usage : sportsbetAlertor_v1.py oddType (0 -home team win, 1 - a dra. 2 - away team win ) expect_oddValue teamA teamB competition Bookie1_used.    i.e 7 parameters on thye cmd line after the filename")
-    #         print("Heres an Example --- sportsbetAlertor_v1.py  0 1.75  lyon  marseille  ligue1 Winamax")
-    #         exit(1)
    
-    # else:    
-    #     #DEBUG_OUTPUT = bool(int(argv[1]))
-    #     retval2 = check_for_tennis_value_bets() #'unibet','zebet','winimaxc','W', 'D','marseilles','nantes','28/11/2020','ligue 1 UberEats')
-
-
-
-
-
