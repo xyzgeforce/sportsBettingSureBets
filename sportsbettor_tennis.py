@@ -411,7 +411,6 @@ def send_sms_alert_tennis(stuff='betclic', players_names= 'RAFA NADAL rOGERfEDER
     message = "Tournament : " +  tourny_name  + " \n Players : \t" + players_names   + " odds are now on betclic's site ! :)"
 
     try:
-        client.publish(PhoneNumber=main_client_phone_number,Message=message)
         client.publish(PhoneNumber=my_phone_number,Message=message)
         client.publish(PhoneNumber=courrouxbro1_client_phone_number,Message=message)
         client.publish(PhoneNumber=courrouxbro2client_phone_number,Message=message)
@@ -483,6 +482,7 @@ def parseTenisSites(driver):
 
             event_element = tennis_game
             try:
+                time.sleep(2)
                 event_element_name_str = event_element.text
             except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
                 any_errors = False
@@ -502,13 +502,13 @@ def parseTenisSites(driver):
                     tourny_n_players  = game_info.split('\n')
 
 
-                    if str(tourny_n_players[-3]).isnumeric() or str(tourny_n_players[-1]).isnumeric() :
-                        continue
-
                     if len(tourny_n_players) >= 3: 
+                        if str(tourny_n_players[-3]).isnumeric() or str(tourny_n_players[-1]).isnumeric() :
+                            continue
+
                         tourny_name       = tourny_n_players[0]
                         players_names     = str(tourny_n_players[-3]) + ' ' + str(tourny_n_players[-1])
-
+                        print('players_names  = ' + players_names)
                     if (tourny_name + players_names) not in unique_match_dict.keys():
                         unique_match_dict[ tourny_name + players_names ] = True  
                     
@@ -527,11 +527,12 @@ def parseTenisSites(driver):
 
                 try:
                     for bet_types in match_beting_fields:
+                        time.sleep(1)
                         bet_type_name = bet_types.text
-                        #print(bet_type_name)
 
                         if 'aces' in bet_type_name.lower() and unique_match_dict[ tourny_name + players_names ] :
                             unique_match_dict[ tourny_name + players_names ]  = False
+                            print('sending sms message... ')
                             send_sms_alert_tennis('betclic', players_names, tourny_name) 
 
                 except (KeyError, NoSuchElementException, StaleElementReferenceException, InvalidSessionIdException):
