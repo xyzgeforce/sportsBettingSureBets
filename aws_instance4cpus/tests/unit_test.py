@@ -1,4 +1,4 @@
- import unittest
+import unittest
 import sys,os
 #sys.path.append('../') # r'C:\Users\MaaD\Desktop\pythonCode\sportsBettingProjects')
 sys.path.append('aws_instance4cpus')
@@ -22,8 +22,6 @@ class Testing(unittest.TestCase):
     #     a = 'some'7
     #     b = 'some'
     #     self.assertEqual(a, b)
-
-
 
     # def test_boolean(self):
     #     a = True
@@ -358,201 +356,200 @@ class Testing(unittest.TestCase):
 #         self.assertEqual(retVal1, 1)  
 #         self.assertAlmostEqual(retVal2[0], expect_surebet_val, places=5)  
 #         #self.assertEqual(retVals[3], oddsList)      
-
-3 wodidvhoiwhv  
+  
 ## test on emailing function:
 
-    def test_send_mail_alert(self):
+#     def test_send_mail_alert3(self):
 
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
 
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = W_2,
-        bookie_2_outcome = D,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = W_2,
+#         bookie_2_outcome = D,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
 
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
 
-        self.assertEqual(retVal, True)
+#         self.assertEqual(retVal, True)
 
-        self.assertEqual(bookyTeamB,'france-pari')
-        self.assertEqual(bookyDraw,'unibet')
+#         self.assertEqual(bookyTeamB,'france-pari')
+#         self.assertEqual(bookyDraw,'unibet')
 
-        self.assertEqual(bookyTeamA,'zebet')
+#         self.assertEqual(bookyTeamA,'zebet')
 
-    #self.assertEqual()
+#     #self.assertEqual()
 
-    def test_send_mail_alert(self):
+#     def test_send_mail_alert(self):
 
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
 
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = W_1,
-        bookie_2_outcome = D,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = W_1,
+#         bookie_2_outcome = D,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
 
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
 
-        self.assertEqual(retVal, True)
+#         self.assertEqual(retVal, True)
 
-        self.assertEqual(bookyTeamA,'france-pari')
-        self.assertEqual(bookyDraw,'unibet')
+#         self.assertEqual(bookyTeamA,'france-pari')
+#         self.assertEqual(bookyDraw,'unibet')
 
-        self.assertEqual(bookyTeamB,'zebet')
-
-
-    def test_send_mail_alert(self):
-
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
-
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = D,
-        bookie_2_outcome = W_1,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
-
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
-
-        self.assertEqual(retVal, True)
-
-        self.assertEqual(bookyTeamB,'zebet')
-        self.assertEqual(bookyDraw,'france-pari')
-
-        self.assertEqual(bookyTeamA,'unibet')
-
-## TODO : fix expected outcomes for remaining mail tests here ...
-    def test_send_mail_alert(self):
-
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
-
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = D,
-        bookie_2_outcome = W_2,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
-
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
-
-        self.assertEqual(retVal, True)
-
-        self.assertEqual(bookyTeamB,'unibet')
-        self.assertEqual(bookyDraw,'france-pari')
-
-        self.assertEqual(bookyTeamA,'zebet')
+#         self.assertEqual(bookyTeamB,'zebet')
 
 
-    def test_send_mail_alert(self):
+#     def test_send_mail_alert1(self):
 
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
 
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = W_2,
-        bookie_2_outcome = W_1,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = D,
+#         bookie_2_outcome = W_1,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
 
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
 
-        self.assertEqual(retVal, True)
+#         self.assertEqual(retVal, True)
 
-        self.assertEqual(bookyTeamB,'france-pari')
-        self.assertEqual(bookyDraw,'zebet')
+#         self.assertEqual(bookyTeamB,'zebet')
+#         self.assertEqual(bookyDraw,'france-pari')
 
-        self.assertEqual(bookyTeamA,'unibet')
+#         self.assertEqual(bookyTeamA,'unibet')
+
+# ## TODO : fix expected outcomes for remaining mail tests here ...
+#     def test_send_mail_alert0(self):
+
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
+
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = D,
+#         bookie_2_outcome = W_2,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
+
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+
+#         self.assertEqual(retVal, True)
+
+#         self.assertEqual(bookyTeamB,'unibet')
+#         self.assertEqual(bookyDraw,'france-pari')
+
+#         self.assertEqual(bookyTeamA,'zebet')
 
 
-    def test_send_mail_alert(self):
+#     def test_send_mail_alert2(self):
 
-        W_1 = 'Home team (1st team name on the betting card) to win'
-        W_2 = 'Away team (2nd team name on the betting card) to win'
-        D   = 'A draw between the team in the 90 minutes'
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
 
-        bookie_1 = 'france-pari',
-        bookie_2 = 'unibet'
-        bookie_3 = 'zebet',
-        bookie_one_outcome = W_1,
-        bookie_2_outcome = W_2,
-        teamA = 'liverpool',
-        teamB = 'real madrid',
-        Date = 'Juin 1 2021',
-        competition = 'ligue des champions',
-        proportions_list = [0.2113, 0.3987, 0.5643], 
-        Profit= 1.15,
-        odd1 = 2.1,
-        odd2 = 3.7,
-        odd3 = 9.5
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = W_2,
+#         bookie_2_outcome = W_1,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
 
-        success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
-              = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
 
-        self.assertEqual(retVal, True)
+#         self.assertEqual(retVal, True)
 
-        self.assertEqual(bookyTeamB,'unibet')
-        self.assertEqual(bookyDraw,'zebet')
+#         self.assertEqual(bookyTeamB,'france-pari')
+#         self.assertEqual(bookyDraw,'zebet')
 
-        self.assertEqual(bookyTeamA,'france-pari')
+#         self.assertEqual(bookyTeamA,'unibet')
+
+
+#     def test_send_mail_alert4(self):
+
+#         W_1 = 'Home team (1st team name on the betting card) to win'
+#         W_2 = 'Away team (2nd team name on the betting card) to win'
+#         D   = 'A draw between the team in the 90 minutes'
+
+#         bookie_1 = 'france-pari',
+#         bookie_2 = 'unibet'
+#         bookie_3 = 'zebet',
+#         bookie_one_outcome = W_1,
+#         bookie_2_outcome = W_2,
+#         teamA = 'liverpool',
+#         teamB = 'real madrid',
+#         Date = 'Juin 1 2021',
+#         competition = 'ligue des champions',
+#         proportions_list = [0.2113, 0.3987, 0.5643], 
+#         Profit= 1.15,
+#         odd1 = 2.1,
+#         odd2 = 3.7,
+#         odd3 = 9.5
+
+#         success_flag, mesage, [bookyTeamA,bookyDraw, bookyTeamB], [proportions_list_win1, proportions_draw, proportions_list_win2], [win1Odd, draw_odd, win2Odd]  \
+#               = send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,bookie_one_outcome, bookie_2_outcome,teamA,teamB,Date,competition, proportions_list, Profit,odd1,odd2,odd3)
+
+#         self.assertEqual(retVal, True)
+
+#         self.assertEqual(bookyTeamB,'unibet')
+#         self.assertEqual(bookyDraw,'zebet')
+
+#         self.assertEqual(bookyTeamA,'france-pari')
 
 
 # tests on  parsing :
@@ -574,7 +571,6 @@ class Testing(unittest.TestCase):
         # input_faked_bookies_data = [ fake_dict_france_pari, fake_dict_zebet,  fake_dict_betclic, fake_dict_cbet, fake_dict_pmu ]
        
         drvr = webdriver.Chrome(executable_path=DRIVER_PATH) #, options = options
-
         if USE_PROXIES:
             PROXY_COUNTER = 0
             k = 33
@@ -601,13 +597,17 @@ class Testing(unittest.TestCase):
                 "proxyType":"MANUAL",
             }
 
-        test1_websites_euro2020_links = [ betclic_EURO2021_link, france_pari_EURO2021_link, unibet_EURO2021_link ]
-        boolean, resultant_data = parseSites(drvr, test1_websites_euro2020_links)
+        # test1_websites_euro2020_links = [ betclic_EURO2021_link, france_pari_EURO2021_link, unibet_EURO2021_link ]
+        test1_websites_euro2020_links = [betclic_ligue1_link, france_pari_ligue1_link, unibet_ligue1_link]
+        inputSports = ['soccer']
+        inputCompetitions = ['mls']
+        boolean = parseSites(drvr,inputSports ,inputCompetitions)#test1_websites_euro2020_links)
+        resultant_data = all_split_sites_data
 
         # Test at least 3 sites's data :
         self.assertGreaterEqual(len(resultant_data),3)
         
-        for dicts in resultant_data:         
+        for dicts in resultant_data:
             for keys, vals in dicts.items():
                 num_odds_per = len(vals)
                 self.assertEqual(num_odds_per, 3)

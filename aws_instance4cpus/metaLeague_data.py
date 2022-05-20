@@ -151,7 +151,7 @@ caesars_league_link      = "https://www.caesars.com/sportsbook-and-casino"
 betmgm                   = "https://sports.on.betmgm.ca/en/sports"
 
 
-north_murica_links = [ betmgm, draft_kings_league_link] # , fan_duel_league_link]
+north_murica_links = [ betmgm , fan_duel_league_link] #  draft_kings_league_link] #
 #
 epl_links =  [ france_pari_premier_league_pre, unibet_premier_league_pre, zebet_premier_league_pre, winimax_premier_league_pre, passionsports_premier_league_pre, 
                 sportifs_pmu_premier_league_pre, betclic_premier_league_pre ] # ,cbet_premier_league_pre#
@@ -172,8 +172,8 @@ xtra_champ_league_maping = { 'manchester city' : "manchester city"
 , 'fc sevilla'         : "sevilla"
 , 'seville'         : "sevilla"
 , 'fc seville'         : "sevilla"
-,"porto"       : "porto"
-,"fc porto"       : "porto"
+, "porto"       : "porto"
+, "fc porto"       : "porto"
 , 'atletico madrid' : "atletico madrid"
 , 'juventus'        : "juventus"  
 , 'juventus turin'  : "juventus"  

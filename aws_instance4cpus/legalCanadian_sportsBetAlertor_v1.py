@@ -12,7 +12,9 @@ import re,pprint
 import requests
 import selenium
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
+
+from selenium.webdriver.support.ui import Select
 
 from selenium.webdriver.chrome.options import Options
 import itertools
@@ -54,8 +56,7 @@ from metaLeague_data import *
 surebet_factor = 1.0
 #cibstant initialised to False - for determining if they customer's expected odds are retrieved for alert system...
 odd_are_found = False
-
-TEST_MODE = False  
+TEST_MODE = False
 
 #client = ScraperAPIClient('781fa06f6c29968fe2971fa6a90760dc')
 #respondsr = client.get(url = "https://france-pari.fr/")
@@ -127,16 +128,14 @@ def return_surebet_vals(*argv, stake):  #odds_A, odds_B,stake):
             surebetStakes.append((1/surebet_factor)*(1/odds))
             #print('surebetStakes[' + str(i) + '] =  ' + str(surebetStakes[i]))
 
-
     return surebetStakes
 
 
 ## TODO : must generalize this and add file to code bundle
 DRIVER_PATH = 'chromedriver' #the path where you have "chromedriver" file.
 
-
 options = Options()
-options.headless = False # True
+options.headless =  False #True
 #options.LogLevel = False
 options.add_argument("--window-size=1920,1200")
 #options.add_argument("--LogLevel=0")
@@ -144,7 +143,7 @@ options.add_argument("--window-size=1920,1200")
 options.add_argument("user-agent= 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_6) AppleWebKit/534.24 (KHTML, like Gecko) Chrome/11.0.698.0 Safari/534.24'")
 driver = webdriver.Chrome(options=options, executable_path=DRIVER_PATH, service_args=["--verbose", "--log-path=D:\\qc1.log"])
     
-def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='barcelone',date='Mercredi 25 Novembre',competition='Ligue des Champions',Bookie1_used='winmax'):
+def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='barcelone',date='Mercredi 25 Novembre',competition='Ligue des Champions',Bookie1_used='winmax', input_sports = ['soccer'], input_competitions = ['MLS']):
 
     global full_all_bookies_allLeagues_match_data, all_split_sites_data # ,all_srpaed_sites_data
 
@@ -177,7 +176,7 @@ def odds_alert_system(oddType=1,expect_oddValue=2.5,teamA='Liverpool',teamB='bar
         # waitr a delay time to refresh sites parsings....
         #if  (not justParsed) :
         
-        if parseSites(driver): #all_srpaed_sites_data):
+        if parseSites(driver, input_sports, input_competitions): #all_srpaed_sites_data):
             pass
 
         ## !!! THIS PIECE OF CODE SEEMS TO BE BREAKING THE PROGRAM - CAUSING IT TO HAVE VERY UNDEFINED RUNTIME BEHAVIOUT ???     
@@ -228,7 +227,7 @@ D   = 'A draw between the team in the 90 minutes'
 ## TEST wait time for after a non dict - data change
 wait_time_idirNoChanges = random.randint(0,1)
 
-def check_for_sure_bets(*args):
+def check_for_sure_bets(*args, input_sports, input_competitions):
 
     global all_split_sites_data, DEBUG_OUTPUT, globCounter
 
@@ -256,7 +255,16 @@ def check_for_sure_bets(*args):
     total_time_parsing = 0.0
     globCounter=0
     dataDictChangdCounter = 0
-    RAND_PROXY_JUMP = 13
+    RAND_PROXY_JUMP = 3
+
+    compettitions =  [ north_murica_links, all_premier_league_sites] #websites_ligue1_links]
+    #else:
+    sports =  ['soccer']
+    if  input_sports:
+        sports = input_sports    
+
+    if  input_competitions: 
+        compettitions =  input_competitions  
 
     while(True):
 
@@ -284,7 +292,7 @@ def check_for_sure_bets(*args):
         start_parse = time.time() 
 
         start_full_parsingTimer = time.time()
-        if parseSites(driver): #all_srpaed_sites_data):
+        if parseSites(driver, input_sports, input_competitions): #all_srpaed_sites_data):
             end_parse = time.time() 
             print('Time to do parsing was = ' + str(end_parse - start_parse))
             total_time_parsing += (end_parse - start_parse) 
@@ -764,7 +772,6 @@ def send_mail_alert_gen_socer_surebet_prportions(bookie_1,bookie_2,bookie_3,book
         proportions_list_draw = proportions_list[0]
         drawOdd               = odd1      
    
-
     if "Home team " in bookie_2_outcome:
         bookieTeamA           = bookie_2
         proportions_list_win  = proportions_list[1]
@@ -939,8 +946,9 @@ tot_pmu         = 0.0
 tot_unibet      = 0.0
 tot_betclic     = 0.0
 
+league_or_cup_name = "MLs"
 compettition = "reg_competition"
-def parseSites(driver): 
+def parseSites(driver, input_sports, input_competitions ): 
 
     start_mainParserTimer = time.time()
     global websites_champs_league_links, compettition, date, refernce_champ_league_gamesDict, full_all_bookies_allLeagues_match_data, DEBUG_OUTPUT, all_split_sites_data, tot_parionbet , tot_france_pari, tot_winimax, tot_cbet, tot_pmu, tot_unibet, tot_betclic    
@@ -958,1430 +966,1439 @@ def parseSites(driver):
 
     wait_time12 = random.randint(1,2)
     #time.sleep(wait_time12)  
-    #websites_ligue1_links.append('https://www.zebet.fr/fr/lives')
+    #websites_ligue1_links.append('https://www.zebet.fr/fr/lives')g
     #websites_ligue1_links.append('https://www.france-pari.fr/lives')
 
     #compettitions =  [ websites_europa_league_links ]  # websites_champs_league_links ] #, bundesliga_links]
 
     # websites_champs_league_links
      # websites_europa_league_links,  #
-    compettitions =  [ north_murica_links, all_premier_league_sites] #websites_ligue1_links]
+    compettitions =  [ ] #north_murica_links, all_premier_league_sites] #websites_ligue1_links]
+    #else:
+    # sports =  ['soccer']
+    # input_sports = [input_sports]
+    if  input_sports:
+        sports = input_sports    
+
+    #if  input_competitions: 
+    #    compettitions =  input_competitions     
+
+
     ## default for teams mapping dict. is Ligue 1 :
     # team_names_maping = comon_TeamNames_mapper
     # if websites_champs_league_links in compettitions or websites_europa_league_links in compettitions :
 
-    combined_leagues_maping = {}
-    #comon_TeamNames_mapper = {'stade brestois': 'brest', 'brestois': 'brest', 'olympiue lyonnais':'lyon', 'olympiue lyon':'lyon','paris saint-germain':'psg','paris saint germain':'psg','paris st-germain':'psg','paris st germain':'psg'
-    combined_leagues_maping.update( comon_TeamNames_mapper )
-    combined_leagues_maping.update( EPL_commonName_mapping )
-    combined_leagues_maping.update( xtra_champ_league_maping )
-    combined_leagues_maping.update( la_Liga_commonName_mapping )
-    combined_leagues_maping.update( comon_team_maping_europa )
-    combined_leagues_maping.update( serie_a_commonName_mapping )
-    combined_leagues_maping.update( bundesliga_commonName_mapping )
+    global league_or_cup_name
+    for sport in input_sports:
+        index = 1
+        for competetits in input_competitions:
 
-    team_names_maping = combined_leagues_maping
+            competetits = competetits.lower()
+            if 'mls' in competetits:
+                compettitions.append(north_murica_links)
+                league_or_cup_name = "MLS"
 
-    print('team_names_maping = ' + str(team_names_maping))
+            if 'epl' in competetits or 'premier league' in competetits or 'premiership' in competetits:
+                compettitions.append(epl_links)
+                league_or_cup_name = "English Premier league"
 
-    for indx, compettition in enumerate(compettitions):
-
-        # if compettition:
-        #     compettition_link1 = compettition[0].lower()
-
-        if compettition == websites_ligue1_links:
-            # 'ligue1' in compettition_link1 or  'ligue-1' in compettition_link1 or  'ligue_1' in compettition_link1 or  'ligue 1' in compettition_link1 : # == websites_ligue1_links:
-            LEAGUE_FLAG = 'french'
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
-            competition = 'Ligue 1'
-
-        elif compettition == all_premier_league_sites:
-            # 'premier-league' in compettition_link1 or 'premier league' in compettition_link1 or 'premierleague' in compettition_link1 or 'premier_league' in compettition_link1:  # == websites_ligue1_links:
-            LEAGUE_FLAG = 'english prem. league ... '
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
-            competition = 'Premier League'
-
-
-        elif compettition == all_la_liga_sites:
-            # 'la liga' in compettition_link1 or 'primera liga' in compettition_link1 or 'la-liga' in compettition_link1 or  'la_liga' in compettition_link1 or  'liga-primera' in compettition_link1  or  'primera-liga' in \
-            # compettition_link1 or  'espagne' in compettition_link1 or  'laliga' in compettition_link1 : #== websites_ligue1_links:
-            LEAGUE_FLAG = 'spanish league - La liga ... '    
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
-            competition = 'La Liga'
-
-        elif compettition == serie_a_links:
-            # 'serie a' in compettition_link1 or 'seriea' in compettition_link1 or 'serie-a' in compettition_link1 or 'italie' in compettition_link1 or 'serie_a' in compettition_link1: # == websites_ligue1_links:
-            LEAGUE_FLAG = 'Italian league -- Serie A ...'   
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
-            competition = 'Serie A'
-
-        elif compettition == bundesliga_links:
-            # 'bundesliga' in compettition_link1: # == websites_ligue1_links:
-            LEAGUE_FLAG = 'German top league -- Bundeslagi BAUSh Bush ! ... ' 
-            competition = 'Bundesliga'
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
-
-        elif compettition == websites_champs_league_links: #'champs_league' in compettition_link1 or 'champions' in compettition_link1:
-            LEAGUE_FLAG = 'Champions' 
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')  
-            competition = 'Ligue des Champions' 
-
-        elif compettition == websites_europa_league_links:
-            # 'europa' in compettition_link1:
-            LEAGUE_FLAG = 'Europa' 
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
-            competition = 'Europa League'
-
-        elif compettition == north_murica_links :
-            # 'europa' in compettition_link1:
-            LEAGUE_FLAG = 'MLS' 
-            print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
-            competition = 'MLS East/west Conference.. '            
-
-        else:
-            print('league not found in competitions list...')
-            competition = 'Ligue 1'
-            continue                
-
-        for i,sites in enumerate(compettition):
-            
-            wait_time = random.randint(1,2)*random.random()
-            time.sleep(wait_time)  
-            #begin = timeit.timeit()  
-            #try:
-            print(sites)
-            try:
-                driver.get(sites)
-            except StaleElementReferenceException:
-                print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-                continue 
-
-                    
-            #except NameError:
-            #    print(" generic Error  trying to pick up a site with the driver - line 979 ..... ")
-            #    continue
-
-            #finish = timeit.timeit()
-            #compettition_ = 'Europa League'
-            start_france_pari = time.time()  
-            if  france_pari in sites :
-            # # zebet tree struct to games elements:    
-                # live games parsing tips ...:
-
-                # in live link - go to element : //*[@id="currentlive"]/div/div -> list of sub element are divs
-
-            ## !!! NBBB !!!!
-                ## the sub elements per game in here's text = 'Ligue 1 Uber Eats®\n1\n0\nMi-temps\nRennes\nLyon\n1\n1,62\nN\n2,88\n2\n4,33'
-
-                # also note - other league games r mixed up with them so must do a continue in the loop if not a game idir ligue one teams, NOT a break!
+            if 'la liga' in competetits:
+                compettitions.append(all_la_liga_sites)
+                league_or_cup_name = "la Liga"
                 
-                print('in france_pari ' + competition + ' ligue1 pre-match parsing .... \n \n')                                                 
-                # try:
-
-                #     ## find sport 1st - > football ,
-                #     sports_list_info_france_pari_try_1 = driver.find_elements_by_xpath('//*[@id="sports"]/ul/li')
-                #     for sport in sports_list_info_france_pari_try_1:
-                #         time.sleep(wait_time)1
-                #         sports = sport.find_elements_by_xpath('.//div/a')#.text
-                #     # sport_text = sports[1].text
-                #         if len(sports) >= 2:
-                #             sport_link = sports[0].get_attribute('href').lower()
-                #         else:
-                #             continue    
-
-
-                #         if 'football' in sport_link:
-                #             parent_ = sports[0].find_element_by_xpath('./..')
-                #             footy_leagues_cups = parent_.find_elements_by_xpath('.//div[2]/div/a')
-                #             #soccer_list_competits = sports[1:]
-                #             for leagues_cups in footy_leagues_cups:
-                #                 tournys = leagues_cups.find_elements_by_xpath('.//a')    
-                #                 for tourny in tournys:
-
-                #                     league_link_text = tourny.get_attribute('href').lower()
-                #                     if 'ligue-1-uber' in league_link_text:
-                #                         competettion = france_ligue1
-                #                         tourny.click()
-
-                #                     elif 'premier league' in league_link_text:
-                #                         competettion = england_premier    
-                #                         tourny.click()
-
-                #                     elif 'la liga' in league_link_text:
-                #                         competettion = spain_la_liga
-                #                         tourny.click()    
-
-                #                     elif  'serie a'  in league_link_text:
-                #                         competettion = italy_serie_a
-                #                         tourny.click()
-
-                #                     elif 'bundesliga' in league_link_text:
-                #                         competettion = germany_bundesliga
-                #                         tourny.click()
-
-                #                     else:
-                #                         print('issue in getting any proper leagues or cup tputnies in competitions list...')
-                #                         continue                  
-
-                    # # then find -> competittions, here go to france - > ligue1
-
-                ligue1_games_info_france_pari_try_1 = driver.find_elements_by_xpath('//*[@id="nb-sport-switcher"]/div[1]/div') 
-        #       # TODO : need to actually make call into zebet champ league page t33o get champ_league_games_nested_gamesinfo_zebet:
-                ligue1_games_info_france_pari_try_2 = driver.find_elements_by_xpath('//*[@id="colonne_centre"]/div/div/div[2]/div')         
-                #for matches in  ligue1_games_infozebet:
-
-                #competition = compettition_
-                ligue1_games_info_france_pari = ligue1_games_info_france_pari_try_1
-                if not ligue1_games_info_france_pari_try_1:
-                    ligue1_games_info_france_pari = ligue1_games_info_france_pari_try_2
-
-                #pargame_elements = ligue1_games_info_france_pari[0].text.split('+')
-                #indx = 3
-                for matches in  ligue1_games_info_france_pari:
-
-                    game_info = matches.text.split('\n')
-                    indx = 0
-                    for i in range(len(game_info)):
-                        #for feech games only :
-                        # teamName_check = [x for x in All_ligue1_team_list if find_substring(x, unidecode.unidecode(game_info[i].lower()))]
-                        # if teamName_check :
-                        #     indx = i
-                        # else:
-                        #     continue    
-
-                        # if len(game_info) >= 8 and '/' in game_info[indx]:
-                        #     teams = game_info[indx].split('/')
-
-                        if len(game_info) >= 8 and '/' in game_info[i]:
-                            teams = game_info[i].split('/')
-
-                            if len(teams) < 2:
-                                #print('No teams found -- either real issue or more likely - you are running the alert system with a match that is not in the betting card YET , please retry ...')
-                                break
-                            try:
-                                teamA = team_names_maping[unidecode.unidecode(teams[0]).lower().strip()]
-                                teamB = team_names_maping[unidecode.unidecode(teams[1]).lower().strip()]
-
-                                teamAWinOdds = game_info[i+2]
-                                draw_odds    = game_info[i+4]
-                                teamBWinOdds = game_info[i+6]
-                            except IndexError:
-                                print("Index Error  non existant Index Error in france-pari site ..... ")
-                                continue   
-                            except KeyError:
-                                print(" KeyError  non existant Index Error in france-pari site ..... ")
-                                continue    
-    
-                            date = '23 decembre'
-                            full_all_bookies_allLeagues_match_data[ france_pari + '_' + unidecode.unidecode(date.lower()) + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                            full_all_bookies_allLeagues_match_data[ france_pari + '_' + unidecode.unidecode(date.lower()) + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
-                            full_all_bookies_allLeagues_match_data[ france_pari + '_' + unidecode.unidecode(date.lower()) + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
-
-                end_france_pari = time.time()     
-                tot_france_pari +=  end_france_pari - start_france_pari
-                print('time taken to process france_pari was = ' + str(end_france_pari - start_france_pari))    
+            if 'bundesliga' in competetits:
+                compettitions.append(bundesliga_links)
+                league_or_cup_name = "bundesliga"
                 
-
-            start_betclic = time.time()            
-            if  betclic in sites :
-                print('in betclic ' +  competition  + ' pre-match parsing .... \n \n')  
-
-                # /html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details  
-                                                                        
-                ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
-                ## use this when generalizing leagues ...
-                #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')    
-                ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
+            if 'serie a' in competetits:
+                compettitions.append(serie_a_links)
+                league_or_cup_name = "Serie A"
                 
-                # champs league link n web elements location
-                ligue1_games_info_betclic_champsL = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div')
-
-                ligue1_games_info_betclic_champsL2 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-competition/bcdk-vertical-scroller/div/div[2]/div/div/div')
-
-
-                ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
-                #for matches in  ligue1_games_infozebet:
-                #parts1 = ligue1_games_info_betclic[0].text.split('+')
-
-                #competition = compettition_
-                second_route = False
-
-                if not ligue1_games_info_betclic and not ligue1_games_info_betclic_1:
-                    second_route = True
-
-                ## A whole new branch of code - relating to a change I  noticed in Betclic page-parsing since 01/02/2021
-                if second_route:
-
-                ## !! Change this     
-                    gen_games_info_betclic = ligue1_games_info_betclic_1
-                    
-                    if LEAGUE_FLAG == 'Champions':
-
-                        gen_games_info_betclic = ligue1_games_info_betclic_champsL
-
-                        if not gen_games_info_betclic:
-
-                            gen_games_info_betclic = ligue1_games_info_betclic_champsL2
-
-                            
-                            if not gen_games_info_betclic:
-
-                                gen_games_info_betclic = ligue1_games_info_betclic_champsL2
-
-                    elif LEAGUE_FLAG == 'Europa':
-                        gen_games_info_betclic = ligue1_games_info_betclic_champsL2
-
-                    else:
-                        print('Have not encountered any known league in Betclic parsing')    
-
-
-                    for panels in gen_games_info_betclic:
-                        try:
-                            games_per_panel = panels.find_elements_by_xpath('.//app-event/div/a/div/div')
-                        except StaleElementReferenceException:
-                            print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-                            continue  
-
-                        ## commenting out this for now - but nee3d to retry as its proper way to do it..
-
-                        # for matchs in  games_per_panel:
-                        #     date = str(datetime.datetime.today()).split()[0] 
-
-
-                                ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-                                # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
-                        try:                       
-                            infos_per_matches = gen_games_info_betclic[0].text.split('Ligue des Champions')
-
-                            if not infos_per_matches:
-                                infos_per_matches = gen_games_info_betclic[0].text.split('Ligue Europa')
-
-                        except StaleElementReferenceException:
-                            print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
-                            continue
-
-                        if len(infos_per_matches) >= 1 :
-
-                            ## !!! LIVE games change to be done as swmn here...
-
-                            ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-                            # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
-
-                            matches = infos_per_matches[0].split('Ligue Europa')
-
-                            for indxs,stuffs in enumerate(matches): 
-
-                                time.sleep(wait_time12)
-                                if len(stuffs) < 2 or '\n' not in stuffs:
-                                    continue
-
-                                info_per_match = stuffs.split('\n')
-                                try:
-                                    teams = team_names_maping[unidecode.unidecode(info_per_match[1].lower().strip())] +  '-' +   team_names_maping[unidecode.unidecode(info_per_match[3].lower().strip())]
-                                except KeyError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
-                                    pass
-
-                                try:
-                                    teams = team_names_maping[unidecode.unidecode(info_per_match[2].lower().strip())] +  '-' +   team_names_maping[unidecode.unidecode(info_per_match[4].lower().strip())]
-                                except KeyError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
-                                    pass
-
-                                try:
-                                    teamAWinOdds = info_per_match[7]
-                                    draw_odds    = info_per_match[11]
-                                    teamBWinOdds = info_per_match[15]
-                                except IndexError:
-                                    any_errors = False
-                                    print("Error  caught in 6your BETCLIC parse fu6nc.  -- IndexError in team mapper  :( .....")
-                                    pass
-
-
-                                try:
-                                    teamAWinOdds = info_per_match[8]
-                                    draw_odds    = info_per_match[12]
-                                    teamBWinOdds = info_per_match[16]
-                                except IndexError:
-                                    any_errors = False
-                                    print("Error  caught in 6your BETCLIC parse fu6nc.  -- IndexError in team mapper  :( .....")
-                                    pass
-
-                                try:
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(draw_odds.replace(',','.')))
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamBWinOdds.replace(',','.')))
-
-                                except ValueError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func. block call --  :( .....")
-                                    continue
-
-                            for key,val in full_all_bookies_allLeagues_match_data.items(): 
-                                if betclic in key:
-                                    break
-
-                            # try:
-                            #     teamA = team_names_maping[unidecode.unidecode(info_per_matches[1] + info_per_match[2]).lower().strip() ]
-                            #     teamB = team_names_maping[unidecode.unidecode(info_per_matches[9] + info_per_match[10]).lower().strip()]
-                            # except KeyError:
-                            #     any_errors = False
-                            #     print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
-                            #     continue
-                            
-                            # try:
-                            #     teamAWinOdds = info_per_matches[3]
-                            #     draw_odds    = info_per_matches[7]
-                            #     teamBWinOdds = info_per_matches[11]
-                            # except IndexError:
-                            #     any_errors = False
-                            #     print("Error  caught in 6your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
-                            #     continue
-
-                            # try:
-                            #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                            #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
-                            #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
-
-                            # except ValueError:
-                            #     any_errors = False
-                            #     print("Error  caught in your BETCLIC parse func. block call --  :( .....")
-                            #     continue
-
-                else:
-
-                    for dates in  ligue1_games_info_betclic:
-
-                        game_info_france1  = dates.text.lower().split('ligue 1 uber eats')
-                        game_info_england1 = dates.text.lower().split('premier league')
-                        game_info_spain1   = dates.text.lower().split('liga primera')
-                        game_info_italy1   = dates.text.lower().split('serie a')
-                        game_info_germany1 = dates.text.lower().split('bundesliga')
-
-                        if len(game_info_france1) > 1:
-                            game_info = game_info_france1
-
-                        elif len(game_info_england1) > 1:
-                            game_info = game_info_england1    
-
-                        elif len(game_info_spain1) > 1:
-                            game_info = game_info_spain1
-
-                        elif len(game_info_italy1) > 1:
-                            game_info = game_info_italy1 
-
-                        elif len(game_info_germany1) > 1:
-                            game_info = game_info_germany1
-
-                        else:
-                            print('issue in getting any proper matches data in betclic...')
-                            continue
-
-                        date = unidecode.unidecode(game_info[0].split('\n')[0])
-                        for matchs in game_info[1:]:
-
-                            ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-                            # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
-
-                            info_per_match = matchs.split('\n')
-                            if len(info_per_match) >= 13 :
-
-                                ## !!! LIVE games change to be done as swmn here...
-
-                                ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
-                                # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
-                                try:
-                                    teamA = team_names_maping[unidecode.unidecode(info_per_match[1]).lower().strip()]
-                                    teamB = team_names_maping[unidecode.unidecode(info_per_match[2]).lower().strip()]
-                                except KeyError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
-                                    continue
-                                
-                                try:
-                                    teamAWinOdds = info_per_match[6]
-                                    draw_odds    = info_per_match[9]
-                                    teamBWinOdds = info_per_match[12]
-                                except IndexError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
-                                    continue
-
-                                try:
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
-                                    full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + competition.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
-
-                                except ValueError:
-                                    any_errors = False
-                                    print("Error  caught in your BETCLIC parse func. block call --  :( .....")
-                                    continue                                
-
-
-                end_betclic = time.time()  
-                tot_betclic += end_betclic - start_betclic
-                print('time taken to process betclic was = ' + str(end_betclic - start_betclic))                 
-
-            start_unibet = time.time()
-
-            # if 'draftkings' in sites:
-
-            #     try:
-
-            #         wait_time37 = random.randint(3,6)
-            #         #time.sleep(wait_time37)  
-
-            #         a_z_sportslist_dkings =  driver.find_elements_by_xpath('//*[@id="root"]/section/section[1]/nav/div[1]/div/div/div')
-
-            #         a_z_sportslist_dkings =  driver.find_element_by_class_name('sportsbook subnav__link')  # > nav > div.sportsbook-subnav__responsive-more-nav > div > div > div
-
-            #         # MLS div : 
-            #         mls_elmment = driver.find_element_by_xpth('//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]')
-
-            #         if mls_elmment:
-
-            #             for game_div in games:
-
-            #                 print(game_div.text)
-
-
-            #     except: #  NoSuchElementException:
-            #         any_errors = False
-            #         print("Error  ->  caught in your draftKings parse func. block call --  :( ..... ")
-            #         continue
-
-
-
-            if  unibet in sites :
-            # unibet tree struct to games elements:
-                print('in unibet ligue1 pre-match parsing .... \n \n')  
-                # Live ligue1 games...
-
-                # //*[@id="page__competitionview"]/div/div[1]/div[2]/div/div/div 
-                # team names and competitio nshud be in here
-
-                #odds of game are then in :
-                # //*[@id="b03b18c2-763c-44ea-aa2b-53835d043b8c"]/div//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]
-                ## full psath gfor this (odds) probly better
-                #/html/body/div[1]/div[2]/div[5]/div/section/div/section/div/section/div/div[1]/div[2]/div/div/div/    section/div/ul/li/div/div/li/div/ul/ul/li/div[2]/div[2]/div/section/div/div
+            if 'ligue-1' in competetits:
+                compettitions.append(websites_ligue1_links)
+                league_or_cup_name = "Ligue1"
                 
-                # 3 'span' elements in here with odds
-                # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
+            if not compettitions :
+                compettitions=  [north_murica_links, all_premier_league_sites] #websites_ligue1_links]
+                league_or_cup_name = "MLS"
 
-                # if 'ligue 1' in sites:
-                #     compettition_ = 'Ligue 1'
+            combined_leagues_maping = {}
+            #comon_TeamNames_mapper = {'stade brestois': 'brest', 'brestois': 'brest', 'olympiue lyonnais':'lyon', 'olympiue lyon':'lyon','paris saint-germain':'psg','paris saint germain':'psg','paris st-germain':'psg','paris st germain':'psg'
+            combined_leagues_maping.update( comon_TeamNames_mapper )
+            combined_leagues_maping.update( EPL_commonName_mapping )
+            combined_leagues_maping.update( xtra_champ_league_maping )
+            combined_leagues_maping.update( la_Liga_commonName_mapping )
+            combined_leagues_maping.update( comon_team_maping_europa )
+            combined_leagues_maping.update( serie_a_commonName_mapping )
+            combined_leagues_maping.update( bundesliga_commonName_mapping )
 
-                # elif 'Liga 1' in sites:
-                #     compettition_ = 'La Liga'
+            team_names_maping = combined_leagues_maping
 
-                # elif 'Premier' in sites:
-                #     compettition_ = 'Premier League'
+            print('team_names_maping = ' + str(team_names_maping))
 
-                # elif 'Champions' in sites:
-                #     compettition_ = 'Ligue des Champions'                    
+            for indx, compettition in enumerate(compettitions):
 
-                # elif 'Europa' in sites:
-                #     compettition_ = 'Europa League'
+                # if compettition:
+                #     compettition_link1 = compettition[0].lower()
+
+                # if compettition == websites_ligue1_links:
+                #     # 'ligue1' in compettition_link1 or  'ligue-1' in compettition_link1 or  'ligue_1' in compettition_link1 or  'ligue 1' in compettition_link1 : # == websites_ligue1_links:
+                #     LEAGUE_FLAG = 'french'
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
+                #     compettition = 'Ligue 1'
+
+                # elif compettition == all_premier_league_sites:
+                #     # 'premier-league' in compettition_link1 or 'premier league' in compettition_link1 or 'premierleague' in compettition_link1 or 'premier_league' in compettition_link1:  # == websites_ligue1_links:
+                #     LEAGUE_FLAG = 'english prem. league ... '
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
+                #     compettition = 'Premier League'
+
+
+                # elif compettition == all_la_liga_sites:
+                #     # 'la liga' in compettition_link1 or 'primera liga' in compettition_link1 or 'la-liga' in compettition_link1 or  'la_liga' in compettition_link1 or  'liga-primera' in compettition_link1  or  'primera-liga' in \
+                #     # compettition_link1 or  'espagne' in compettition_link1 or  'laliga' in compettition_link1 : #== websites_ligue1_links:
+                #     LEAGUE_FLAG = 'spanish league - La liga ... '    
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')
+                #     compettition = 'La Liga'
+
+                # elif compettition == serie_a_links:
+                #     # 'serie a' in compettition_link1 or 'seriea' in compettition_link1 or 'serie-a' in compettition_link1 or 'italie' in compettition_link1 or 'serie_a' in compettition_link1: # == websites_ligue1_links:
+                #     LEAGUE_FLAG = 'Italian league -- Serie A ...'   
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ') 
+                #     compettition = 'Serie A'
+
+                # elif compettition == bundesliga_links:
+                #     # 'bundesliga' in compettition_link1: # == websites_ligue1_links:
+                #     LEAGUE_FLAG = 'German top league -- Bundeslagi BAUSh Bush ! ... ' 
+                #     compettition = 'Bundesliga'
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
+
+                # elif compettition == websites_champs_league_links: #'champs_league' in compettition_link1 or 'champions' in compettition_link1:
+                #     LEAGUE_FLAG = 'Champions' 
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')  
+                #     compettition = 'Ligue des Champions' 
+
+                # elif compettition == websites_europa_league_links:
+                #     # 'europa' in compettition_link1:
+                #     LEAGUE_FLAG = 'Europa' 
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
+                #     compettition = 'Europa League'
+
+                # elif compettition == north_murica_links :
+                #     # 'europa' in compettition_link1:
+                #     LEAGUE_FLAG = 'MLS' 
+                #     print('parsing the ' + str(LEAGUE_FLAG ) + ' league SONS :)... ')   
+                #     compettition = 'MLS East/west Conference.. '            
 
                 # else:
-                #     compettition_ = 'Ligue 1'
+                #     print('league not found in compettitions list...')
+                #     compettition = 'Ligue 1'
+                #     continue                
+
+                for i,sites in enumerate(compettition):
+                    
+                    wait_time = random.randint(1,2)*random.random()
+                    time.sleep(wait_time)  
+                    #begin = timeit.timeit()  
+                    #try:
+                    print(sites)
+                    # try:
+                    #     driver.get(sites)
+                    # except StaleElementReferenceException:
+                    #     print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
+                    #     continue 
+
+                    #if 
+
+                            
+                    #except NameError:
+                    #    print(" generic Error  trying to pick up a site with the driver - line 979 ..... ")
+                    #    continue
+
+                    #finish = timeit.timeit()
+                    #compettition_ = 'Europa League'
 
 
-                try:
+                    start_betclic = time.time()            
+                    if  betclic in sites :
+                        print('in betclic ' +  league_or_cup_name  + ' pre-match parsing .... \n \n')  
 
-                    wait_time37 = random.randint(3,6)
-                    #print('second rand wait time = ' + str(wait_time37))
-                    time.sleep(wait_time37)  
+                        # /html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-compettition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details  
+                                                                                
+                        ligue1_games_info_betclic   = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/app-compettition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div')
+                        ## use this when generalizing leagues ...
+                        #ligue1_games_info_betclic_2  = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/app-left-menu/div/app-sports-nav-bar/div/div[1]/app-block/div/div[2]')    
+                        ligue1_games_info_betclic_1 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-compettition/bcdk-vertical-scroller/div/div[2]/div/div/app-sport-event-details/div[1]/div')
+                        
+                        # champs league link n web elements location
+                        ligue1_games_info_betclic_champsL = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-compettition/bcdk-vertical-scroller/div/div[2]/div/div')
+                        ligue1_games_info_betclic_champsL2 = driver.find_elements_by_xpath('/html/body/app-desktop/div[1]/div/bcdk-content-scroller/div/sports-compettition/bcdk-vertical-scroller/div/div[2]/div/div/div')
 
-                    ligue1_games_nested_gamesinfo_unibet_1 =  driver.find_elements_by_xpath('//*[@id="page__competitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2]/div')  
-                    ligue1_games_nested_gamesinfo_unibet_2 =  driver.find_elements_by_xpath('/html/body/div[1]/div[2]/div[5]/div/section/div/section/div/section/div[1]/div/div[2]/div/div/div[2]/div[2]/div[1]/div/div')                                                                            #//*[@id="page__competitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2] 
-                    time.sleep(wait_time12)                                                                         #//*[@id="page__competitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2]
-                    ligue1_games_nested_gamesinfo_unibet_3 =  driver.find_elements_by_xpath('//*[@id="page__competitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]/div[1]/div')
-                    ligue1_games_nested_gamesinfo_unibet_4 =  driver.find_elements_by_xpath('//*[@id="page__competitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]')
-                    #print('in unibet and collected all ligue one games web element ! ... ')
-                    #competition =  compettition_
+                        ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
+                        #for matches in  ligue1_games_infozebet:
+                        #parts1 = ligue1_games_info_betclic[0].text.split('+')
 
-                    time.sleep(wait_time12)  
+                        #compettition = compettition_
+                        second_route = False
 
-                    ligue1_games_nested_gamesinfo_unibet =  ligue1_games_nested_gamesinfo_unibet_1
-                    if not ligue1_games_nested_gamesinfo_unibet_1:
-                        ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_2
-                        if not ligue1_games_nested_gamesinfo_unibet_2:
-                            ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
-                            if ligue1_games_nested_gamesinfo_unibet_3 and len(ligue1_games_nested_gamesinfo_unibet_3[0].text) > len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :
-                                ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
-        
-                            elif  ligue1_games_nested_gamesinfo_unibet_4 and len(ligue1_games_nested_gamesinfo_unibet_3[0].text) < len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :   
-                                ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+                        if not ligue1_games_info_betclic and not ligue1_games_info_betclic_1:
+                            second_route = True
 
-                            elif   ligue1_games_nested_gamesinfo_unibet_3 and  not ligue1_games_nested_gamesinfo_unibet_4:
-                                ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
+                        ## A whole new branch of code - relating to a change I  noticed in Betclic page-parsing since 01/02/2021
+                        if second_route:
 
-                            elif  not ligue1_games_nested_gamesinfo_unibet_3 and  ligue1_games_nested_gamesinfo_unibet_4:
-                                ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+                        ## !! Change this     
+                            gen_games_info_betclic = ligue1_games_info_betclic_1
+                            
+                            if LEAGUE_FLAG == 'Champions':
+
+                                gen_games_info_betclic = ligue1_games_info_betclic_champsL
+
+                                if not gen_games_info_betclic:
+
+                                    gen_games_info_betclic = ligue1_games_info_betclic_champsL2
+
+                                    
+                                    if not gen_games_info_betclic:
+
+                                        gen_games_info_betclic = ligue1_games_info_betclic_champsL2
+
+                            elif LEAGUE_FLAG == 'Europa':
+                                gen_games_info_betclic = ligue1_games_info_betclic_champsL2
 
                             else:
-                                print('driver find element call return nothing ... try again or exit with no results for games in ligue 1 UNIBET...')
-                                ## TODO : implement another method - different path - maybe full Xpath to a known root easily or use Bueaty soup ...etc.
+                                print('Have not encountered any known league in Betclic parsing')    
+
+
+                            for panels in gen_games_info_betclic:
+                                try:
+                                    games_per_panel = panels.find_elements_by_xpath('.//app-event/div/a/div/div')
+                                except StaleElementReferenceException:
+                                    print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
+                                    continue  
+
+                                ## commenting out this for now - but nee3d to retry as its proper way to do it..
+
+                                # for matchs in  games_per_panel:
+                                #     date = str(datetime.datetime.today()).split()[0] 
+
+
+                                        ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                                        # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+                                try:                       
+                                    infos_per_matches = gen_games_info_betclic[0].text.split('Ligue des Champions')
+
+                                    if not infos_per_matches:
+                                        infos_per_matches = gen_games_info_betclic[0].text.split('Ligue Europa')
+
+                                except StaleElementReferenceException:
+                                    print(" StaleElementReferenceException Error in Betclic site -- when trying to grab  ..... ")
+                                    continue
+
+                                if len(infos_per_matches) >= 1 :
+
+                                    ## !!! LIVE games change to be done as swmn here...
+
+                                    ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                                    # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+
+                                    matches = infos_per_matches[0].split('Ligue Europa')
+
+                                    for indxs,stuffs in enumerate(matches): 
+
+                                        time.sleep(wait_time12)
+                                        if len(stuffs) < 2 or '\n' not in stuffs:
+                                            continue
+
+                                        info_per_match = stuffs.split('\n')
+                                        try:
+                                            teams = team_names_maping[unidecode.unidecode(info_per_match[1].lower().strip())] +  '-' +   team_names_maping[unidecode.unidecode(info_per_match[3].lower().strip())]
+                                        except KeyError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                            pass
+
+                                        try:
+                                            teams = team_names_maping[unidecode.unidecode(info_per_match[2].lower().strip())] +  '-' +   team_names_maping[unidecode.unidecode(info_per_match[4].lower().strip())]
+                                        except KeyError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                            pass
+
+                                        try:
+                                            teamAWinOdds = info_per_match[7]
+                                            draw_odds    = info_per_match[11]
+                                            teamBWinOdds = info_per_match[15]
+                                        except IndexError:
+                                            any_errors = False
+                                            print("Error  caught in 6your BETCLIC parse fu6nc.  -- IndexError in team mapper  :( .....")
+                                            pass
+
+
+                                        try:
+                                            teamAWinOdds = info_per_match[8]
+                                            draw_odds    = info_per_match[12]
+                                            teamBWinOdds = info_per_match[16]
+                                        except IndexError:
+                                            any_errors = False
+                                            print("Error  caught in 6your BETCLIC parse fu6nc.  -- IndexError in team mapper  :( .....")
+                                            pass
+
+                                        try:
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(draw_odds.replace(',','.')))
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(teamBWinOdds.replace(',','.')))
+
+                                        except ValueError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func. block call --  :( .....")
+                                            continue
+
+                                    for key,val in full_all_bookies_allLeagues_match_data.items(): 
+                                        if betclic in key:
+                                            break
+
+                                    # try:3
+                                    #     teamA = team_names_maping[unidecode.unidecode(info_per_matches[1] + info_per_match[2]).lower().strip() ]
+                                    #     teamB = team_names_maping[unidecode.unidecode(info_per_matches[9] + info_per_match[10]).lower().strip()]
+                                    # except KeyError:
+                                    #     any_errors = False
+                                    #     print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                    #     continue
+                                    
+                                    # try:
+                                    #     teamAWinOdds = info_per_matches[3]
+                                    #     draw_odds    = info_per_matches[7]
+                                    #     teamBWinOdds = info_per_matches[11]
+                                    # except IndexError:
+                                    #     any_errors = False
+                                    #     print("Error  caught in 6your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
+                                    #     continue
+
+                                    # try:
+                                    #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                    #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
+                                    #     full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
+
+                                    # except ValueError:
+                                    #     any_errors = False
+                                    #     print("Error  caught in your BETCLIC parse func. block call --  :( .....")
+                                    #     continue
+
+                        else:
+
+                            for dates in  ligue1_games_info_betclic:
+
+                                game_info_france1  = dates.text.lower().split('ligue 1 uber eats')
+                                game_info_england1 = dates.text.lower().split('premier league')
+                                game_info_spain1   = dates.text.lower().split('liga primera')
+                                game_info_italy1   = dates.text.lower().split('serie a')
+                                game_info_germany1 = dates.text.lower().split('bundesliga')
+
+                                if len(game_info_france1) > 1:
+                                    game_info = game_info_france1
+
+                                elif len(game_info_england1) > 1:
+                                    game_info = game_info_england1    
+
+                                elif len(game_info_spain1) > 1:
+                                    game_info = game_info_spain1
+
+                                elif len(game_info_italy1) > 1:
+                                    game_info = game_info_italy1 
+
+                                elif len(game_info_germany1) > 1:
+                                    game_info = game_info_germany1
+
+                                else:
+                                    print('issue in getting any proper matches data in betclic...')
+                                    continue
+
+                                date = unidecode.unidecode(game_info[0].split('\n')[0])
+                                for matchs in game_info[1:]:
+
+                                    ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                                    # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+
+                                    info_per_match = matchs.split('\n')
+                                    if len(info_per_match) >= 13 :
+
+                                        ## !!! LIVE games change to be done as swmn here...
+
+                                        ## Live string needs another branch to handle - diff indices for teams and odds as per 'match' string then being :
+                                        # ®\n37' - 1ère  mt\bordeaux\n1 - 1\nlorient\nrésultat du match\nbord\neaux\n2,15\nn\nul\n2,35\nlor\nient\n3,15\nquelle équipe marquera le but 3 ?\nbord\neaux\n1,75\npas de\n but\n4,10\nlor\nient\n2,25\n67\nparis\n"
+                                        try:
+                                            teamA = team_names_maping[unidecode.unidecode(info_per_match[1]).lower().strip()]
+                                            teamB = team_names_maping[unidecode.unidecode(info_per_match[2]).lower().strip()]
+                                        except KeyError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func.  -- keyError in team mapper  :( .....")
+                                            continue
+                                        
+                                        try:
+                                            teamAWinOdds = info_per_match[6]
+                                            draw_odds    = info_per_match[9]
+                                            teamBWinOdds = info_per_match[12]
+                                        except IndexError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func.  -- IndexError in team mapper  :( .....")
+                                            continue
+
+                                        try:
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(teamAWinOdds.replace(',','.'))) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(draw_odds.replace(',','.')))
+                                            full_all_bookies_allLeagues_match_data[ betclic + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA + ' - ' + teamB].append(float(teamBWinOdds.replace(',','.')))
+
+                                        except ValueError:
+                                            any_errors = False
+                                            print("Error  caught in your BETCLIC parse func. block call --  :( .....")
+                                            continue                                
+
+
+                        end_betclic = time.time()  
+                        tot_betclic += end_betclic - start_betclic
+                        print('time taken to process betclic was = ' + str(end_betclic - start_betclic))                 
+
+                    start_unibet = time.time()
+
+                    # if 'draftkings' in sites:
+
+                    #     try:
+
+                    #         wait_time37 = random.randint(3,6)
+                    #         #time.sleep(wait_time37)  
+
+                    #         a_z_sportslist_dkings =  driver.find_elements_by_xpath('//*[@id="root"]/section/section[1]/nav/div[1]/div/div/div')
+
+                    #         a_z_sportslist_dkings =  driver.find_element_by_class_name('sportsbook subnav__link')  # > nav > div.sportsbook-subnav__responsive-more-nav > div > div > div
+
+                    #         # MLS div : 
+                    #         mls_elmment = driver.find_element_by_xpth('//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]')
+
+                    #         if mls_elmment:
+
+                    #             for game_div in games:
+
+                    #                 print(game_div.text)
+
+
+                    #     except: #  NoSuchElementException:
+                    #         any_errors = False
+                    #         print("Error  ->  caught in your draftKings parse func. block call --  :( ..... ")
+                    #         continue
+
+
+
+                    if  unibet in sites :
+                    # unibet tree struct to games elements:
+                        print('in unibet ligue1 pre-match parsing .... \n \n')  
+                        # Live ligue1 games...
+
+                        # //*[@id="page__compettitionview"]/div/div[1]/div[2]/div/div/div 
+                        # team names and competitio nshud be in here
+
+                        #odds of game are then in :
+                        # //*[@id="b03b18c2-763c-44ea-aa2b-53835d043b8c"]/div//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]
+                        ## full psath gfor this (odds) probly better
+                        #/html/body/div[1]/div[2]/div[5]/div/section/div/section/div/section/div/div[1]/div[2]/div/div/div/    section/div/ul/li/div/div/li/div/ul/ul/li/div[2]/div[2]/div/section/div/div
+                        
+                        # 3 'span' elements in here with odds
+                        # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
+
+                        # if 'ligue 1' in sites:
+                        #     compettition_ = 'Ligue 1'
+
+                        # elif 'Liga 1' in sites:
+                        #     compettition_ = 'La Liga'
+
+                        # elif 'Premier' in sites:
+                        #     compettition_ = 'Premier League'
+
+                        # elif 'Champions' in sites:
+                        #     compettition_ = 'Ligue des Champions'                    
+
+                        # elif 'Europa' in sites:
+                        #     compettition_ = 'Europa League'
+
+                        # else:
+                        #     compettition_ = 'Ligue 1'
+
+
+                        try:
+
+                            wait_time37 = random.randint(3,6)
+                            #print('second rand wait time = ' + str(wait_time37))
+                            time.sleep(wait_time37)  
+
+                            ligue1_games_nested_gamesinfo_unibet_1 =  driver.find_elements_by_xpath('//*[@id="page__compettitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2]/div')  
+                            ligue1_games_nested_gamesinfo_unibet_2 =  driver.find_elements_by_xpath('/html/body/div[1]/div[2]/div[5]/div/section/div/section/div/section/div[1]/div/div[2]/div/div/div[2]/div[2]/div[1]/div/div')                                                                            #//*[@id="page__compettitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2] 
+                            time.sleep(wait_time12)                                                                         #//*[@id="page__compettitionview"]/div/div[1]/div[2]/div/div/div/div[3]/div[2]
+                            ligue1_games_nested_gamesinfo_unibet_3 =  driver.find_elements_by_xpath('//*[@id="page__compettitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]/div[1]/div')
+                            ligue1_games_nested_gamesinfo_unibet_4 =  driver.find_elements_by_xpath('//*[@id="page__compettitionview"]/div[1]/div/div[2]/div/div/div[2]/div[2]')
+                            #print('in unibet and collected all ligue one games web element ! ... ')
+                            #compettition =  compettition_
+
+                            time.sleep(wait_time12)  
+
+                            ligue1_games_nested_gamesinfo_unibet =  ligue1_games_nested_gamesinfo_unibet_1
+                            if not ligue1_games_nested_gamesinfo_unibet_1:
+                                ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_2
+                                if not ligue1_games_nested_gamesinfo_unibet_2:
+                                    ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
+                                    if ligue1_games_nested_gamesinfo_unibet_3 and len(ligue1_games_nested_gamesinfo_unibet_3[0].text) > len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :
+                                        ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
+                
+                                    elif  ligue1_games_nested_gamesinfo_unibet_4 and len(ligue1_games_nested_gamesinfo_unibet_3[0].text) < len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :   
+                                        ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+
+                                    elif   ligue1_games_nested_gamesinfo_unibet_3 and  not ligue1_games_nested_gamesinfo_unibet_4:
+                                        ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_3
+
+                                    elif  not ligue1_games_nested_gamesinfo_unibet_3 and  ligue1_games_nested_gamesinfo_unibet_4:
+                                        ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+
+                                    else:
+                                        print('driver find element call return nothing ... try again or exit with no results for games in ligue 1 UNIBET...')
+                                        ## TODO : implement another method - different path - maybe full Xpath to a known root easily or use Bueaty soup ...etc.
+                                        continue
+                                    
+                                elif  ligue1_games_nested_gamesinfo_unibet_4 and len(ligue1_games_nested_gamesinfo_unibet_2[0].text) < len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :   
+                                    ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+
+                                elif   ligue1_games_nested_gamesinfo_unibet_2 and  not ligue1_games_nested_gamesinfo_unibet_4:
+                                    ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_2
+
+                                elif  not ligue1_games_nested_gamesinfo_unibet_2 and  ligue1_games_nested_gamesinfo_unibet_4:
+                                    ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
+
+                                else:
+                                    print('driver find element call return nothing ... try again or exit with no results for games in ligue 1 UNIBET...')
+                                    ## TODO : implement another method - different path - maybe full Xpath to a known root easily or use Bueaty soup ...etc.
+                                    continue
+                            
+                            for game_info in  ligue1_games_nested_gamesinfo_unibet:
+                            
+                                time.sleep(wait_time12)  
+
+                                parts_france1  = game_info.text.lower().split('ligue 1 ubereats')
+                                parts_england1 = game_info.text.lower().split('premier league')
+                                parts_spain1   = game_info.text.lower().split('liga primera')
+                                parts_italy1   = game_info.text.lower().split('serie a')
+                                parts_germany1 = game_info.text.lower().split('bundesliga')
+                                parts_champsLi = game_info.text.lower().split('ligue des champions')
+                                parts_europa = game_info.text.lower().split('europa league')
+
+                                if len(parts_france1) > 1:
+                                    parts = parts_france1
+
+                                elif len(parts_england1) > 1:
+                                    parts = parts_england1    
+
+                                elif len(parts_spain1) > 1:
+                                    parts = parts_spain1
+
+                                elif len(parts_italy1) > 1:
+                                    parts = parts_italy1 
+
+                                elif len(parts_germany1) > 1:
+                                    parts = parts_germany1
+
+                                elif len(parts_champsLi) > 1:
+                                    parts = parts_champsLi    
+
+                                elif len(parts_europa) > 1:
+                                    parts = parts_europa                   
+
+                                else:
+                                    print('issue in getting any proper matches data in unibet...')
+                                    continue
+
+                                delimit_1 = parts[0].split('\n')
+                                date = unidecode.unidecode(delimit_1[0])
+
+                                if unidecode.unidecode(date.lower()) not in french_dates_list:
+                                    date = date_ 
+
+                                longer_info_match = True
+                                for i in range(len(parts)-1):
+                                                    
+                                    if '%' not in parts[i+1]:
+                                        longer_info_match = False
+
+                                    delimit_2 = parts[i+1].split('\n')
+                                    if len(delimit_1) >= 2 and len(delimit_2) >= 6 :
+
+                                        sep_team_names = parts[i].split('\n')[-2].split(' - ')
+
+                                        # handle the case of 'sain-etienne'
+                                        #if len(sep_team_names) > 2 and 'tienne' in sep_team_names:
+
+                                        teamA_raw = sep_team_names[0].strip()
+                                        teamB_raw = sep_team_names[1].strip()       
+
+                                        teams =  team_names_maping[unidecode.unidecode(teamA_raw).lower()] + ' - ' + team_names_maping[unidecode.unidecode(teamB_raw).lower()] 
+                                        #unidecode.unidecode(parts[i].split('\n')[-2]).lower()
+                                        time.sleep(wait_time12)
+                                        if longer_info_match:
+                                            
+                                            teamAWinOdds = delimit_2[2]
+                                            draw_odds = delimit_2[5]                          
+                                            teamBWinOdds = delimit_2[8]
+                                        else:
+
+                                            teamAWinOdds = delimit_2[1].split(' ')[1]
+                                            draw_odds = delimit_2[2].split(' ')[1]                            
+                                            teamBWinOdds = delimit_2[3].split(' ')[1]                            
+
+                                        full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(teamAWinOdds))   
+                                        full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(draw_odds))    
+                                        full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(float(teamBWinOdds))  
+
+                            end_unibet = time.time()  
+                            tot_unibet += end_unibet - start_unibet
+                            print('time taken to process unibet was = ' + str( end_unibet - start_unibe ))                                
+
+                        except: #  NoSuchElementException:
+                            any_errors = False
+                            print("Error  ->  caught in your UNIBET parse func. block call --  :( ..... ")
+                            continue
+                        #check = 1
+
+                    #full path copied from sourcecode tool       
+                    #/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]
+                    start_winimax = time.time()
+                    if winimax in sites :        
+                        print('in winimax ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')   
+                        #ompetition   =  compettition_ #split_match_data_str[1]  
+                        match_count_wini = 0
+                                                                                            
+                        ligue1_games_nested_gamesinfo_winimax = driver.find_elements_by_xpath('/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div')                                    
+                        ligue1_games_nested_gamesinfo_winimax_2 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div') 
+                        ligue1_games_nested_gamesinfo_winimax_3 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div/div')    
+                        ligue1_games_nested_gamesinfo_winimax_4 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div[2]/div[1]/div/div')                                                                
+                        if not  ligue1_games_nested_gamesinfo_winimax:
+                            ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_2   
+                            if not   ligue1_games_nested_gamesinfo_winimax:
+                                ligue1_games_nested_gamesinfo_winimax =  ligue1_games_nested_gamesinfo_winimax_3
+                                if not ligue1_games_nested_gamesinfo_winimax_3:
+                                    ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_4
+                                                                                                                                                                            # #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
+                        # TEST _ CHANGE Loop var to the live one here temporarily
+                        for matches in ligue1_games_nested_gamesinfo_winimax: #ligue1_games_nested_gamesinfo_winimax_live_footy:  # ligue1_games_nested_gamesinfo_winimax:                 #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
+                            if matches.rect['height'] < 50.0:
+                                #check if you get a non match day like - alternative betting type header
+                                # (occues at the end of the ligue one games list on winimax pro ejemplo0)
+                                # if not (any(char.isdigit() for char in matches.text)):
+                                #    continue
+                                if find_substring("BETS ON THE ", matches.text):
+                                    break
+                                date = unidecode.unidecode(matches.text)   
                                 continue
                             
-                        elif  ligue1_games_nested_gamesinfo_unibet_4 and len(ligue1_games_nested_gamesinfo_unibet_2[0].text) < len(ligue1_games_nested_gamesinfo_unibet_4[0].text) :   
-                            ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
-
-                        elif   ligue1_games_nested_gamesinfo_unibet_2 and  not ligue1_games_nested_gamesinfo_unibet_4:
-                            ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_2
-
-                        elif  not ligue1_games_nested_gamesinfo_unibet_2 and  ligue1_games_nested_gamesinfo_unibet_4:
-                            ligue1_games_nested_gamesinfo_unibet = ligue1_games_nested_gamesinfo_unibet_4
-
-                        else:
-                            print('driver find element call return nothing ... try again or exit with no results for games in ligue 1 UNIBET...')
-                            ## TODO : implement another method - different path - maybe full Xpath to a known root easily or use Bueaty soup ...etc.
-                            continue
-                    
-                    for game_info in  ligue1_games_nested_gamesinfo_unibet:
-                    
-                        time.sleep(wait_time12)  
-
-                        parts_france1  = game_info.text.lower().split('ligue 1 ubereats')
-                        parts_england1 = game_info.text.lower().split('premier league')
-                        parts_spain1   = game_info.text.lower().split('liga primera')
-                        parts_italy1   = game_info.text.lower().split('serie a')
-                        parts_germany1 = game_info.text.lower().split('bundesliga')
-                        parts_champsLi = game_info.text.lower().split('ligue des champions')
-                        parts_europa = game_info.text.lower().split('europa league')
-
-                        if len(parts_france1) > 1:
-                            parts = parts_france1
-
-                        elif len(parts_england1) > 1:
-                            parts = parts_england1    
-
-                        elif len(parts_spain1) > 1:
-                            parts = parts_spain1
-
-                        elif len(parts_italy1) > 1:
-                            parts = parts_italy1 
-
-                        elif len(parts_germany1) > 1:
-                            parts = parts_germany1
-
-                        elif len(parts_champsLi) > 1:
-                            parts = parts_champsLi    
-
-                        elif len(parts_europa) > 1:
-                            parts = parts_europa                   
-
-                        else:
-                            print('issue in getting any proper matches data in unibet...')
-                            continue
-
-                        delimit_1 = parts[0].split('\n')
-                        date = unidecode.unidecode(delimit_1[0])
-
-                        if unidecode.unidecode(date.lower()) not in french_dates_list:
-                            date = date_ 
-
-                        longer_info_match = True
-                        for i in range(len(parts)-1):
-                                            
-                            if '%' not in parts[i+1]:
+                            longer_info_match = True
+                            if '%' not in matches.text:
                                 longer_info_match = False
 
-                            delimit_2 = parts[i+1].split('\n')
-                            if len(delimit_1) >= 2 and len(delimit_2) >= 6 :
-
-                                sep_team_names = parts[i].split('\n')[-2].split(' - ')
-
-                                # handle the case of 'sain-etienne'
-                                #if len(sep_team_names) > 2 and 'tienne' in sep_team_names:
-
-                                teamA_raw = sep_team_names[0].strip()
-                                teamB_raw = sep_team_names[1].strip()       
-
-                                teams =  team_names_maping[unidecode.unidecode(teamA_raw).lower()] + ' - ' + team_names_maping[unidecode.unidecode(teamB_raw).lower()] 
-                                #unidecode.unidecode(parts[i].split('\n')[-2]).lower()
-                                time.sleep(wait_time12)
-                                if longer_info_match:
-                                    
-                                    teamAWinOdds = delimit_2[2]
-                                    draw_odds = delimit_2[5]                          
-                                    teamBWinOdds = delimit_2[8]
-                                else:
-
-                                    teamAWinOdds = delimit_2[1].split(' ')[1]
-                                    draw_odds = delimit_2[2].split(' ')[1]                            
-                                    teamBWinOdds = delimit_2[3].split(' ')[1]                            
-
-                                full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamAWinOdds))   
-                                full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(draw_odds))    
-                                full_all_bookies_allLeagues_match_data[ unibet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(float(teamBWinOdds))  
-
-                    end_unibet = time.time()  
-                    tot_unibet += end_unibet - start_unibet
-                    print('time taken to process unibet was = ' + str( end_unibet - start_unibe ))                                
-
-                except: #  NoSuchElementException:
-                    any_errors = False
-                    print("Error  ->  caught in your UNIBET parse func. block call --  :( ..... ")
-                    continue
-                #check = 1
-
-    ######################################################################
-    ##            LATEAST TESTING CODE FOR LIVE LIGUE1  ON  ZEBET   
-    ######################################################################            
-            if  zebet in sites and 'live' in sites :
-                #competition =  compettition_
-                date = 'LIVE'
-        
-            # #     ## NOTE live chgamp lieague hgames  on diff link when live - just normal football  page at top ! :
-            # #       #  this link :   
-            # #         ## This should be working, mas o menos, code for zebet live champions league           
-            #         driver.quit() 
-            #         driver.get('https://www.zebet.fr/fr/lives')
-
-            #         # can see games here - check for frech team pairings -> click on sref link in //*[@id="lives"]/div (all live game group elements) -> then <a href = "link.....fr"  
-            #         # # is directly in here and clickable
-
-            #all live sports games as on 9/01 in :
-            #//*[@id="lives"/artcle]
-
-                live_football_gamesDiv = driver.find_elements_by_xpath('//*[@id="lives"]/article')
-                for stuff in live_football_gamesDiv:
-                    #game_link =  stuff.find_element_by_xpath('//a href').text
-                    teamA = team_names_maping[unidecode.unidecode(stuff.text.split('\n')[2]).lower()]
-                    teamB = team_names_maping[unidecode.unidecode(stuff.text.split('\n')[4]).lower()]
-                    teams = teamA + ' - ' + teamB  
-                    #live_odds_path =  stuff.find_element_by_xpath('//div/div[2]/a')
-
-                    ## check syntax !?....?
-                    #live_odds_match_link = odds_path.get('href')
-
-                    #then odds are given for home teAm to win or draw only ...??
-
-                    # can ue fact that sum of the 3 odds inverses should equal 1 to get :
-                    # odd away team to win :  1/odd_awat_team_to_win   = 1 - [1/(home_team_win) + 1/draw]
-                    # then do surebet calc as usual
-
-                    ## must click on and navigate on the lives odds link here :
-
-                    #then inspect @ //*[@id="live"]/article[1] - for win/draw odds  
-                    live_odds_game_info = stuff.text.split('\n')
-                    if teamA in All_ligue1_team_list and teamB in All_ligue1_team_list and len(live_odds_game_info) >= 11:
-                        print('yes its a ligue 1 match -> follow link !')
-                        # follow link code goes here...
-
-                        teamAWinOdds = float(live_odds_game_info[7].replace(',','.'))
-                        draw_odds    = float(live_odds_game_info[9].replace(',','.'))
-                        teamBWinOdds = float(live_odds_game_info[11].replace(',','.'))
-                        
-
-                        full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                        full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
-                        full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
-
-
-            #sites = "https://www.zebet.fr/en/competition/94-premier_league"
-            if  zebet in sites and 'live' not in sites:
-            # # zebet tree struct to games elements:                                                     
-                print('in zebet ' + competition + ' pre-match parsing .... \n \n') 
-                #competition =  compettition_ 
-                try:
-                                                                            #//*[@id="event"]/article[1]/div/div/div/div
-                    ligue1_games_infozebet = driver.find_elements_by_xpath('//*[@id="event"]/article/div/div/div/div/div') 
-                    ## TODO : need to actually make call into zebet champ league page to get champ_league_games_nested_gamesinfo_zebet:
-
-                    #will have to take out and pprocess leagues separately for zebet.
-                    #prem_leagueGames_info =  driver.find_elements_by_xpath('//*[@id="event"]/article/div/div/div/div/div/div[1]/div')                
-                    zebet_count_games = 0
-
-                    #parts1 = ligue1_games_infozebet[0].text.split('+')[0]
-                    for matches in  ligue1_games_infozebet:
-
-                        game_info = matches.text.split('+')[0].split('\n')
-                        if len(game_info) >= 8 :
-
-                            #handle case where the parser begins to mis-identify the ligue 1 winners betting...
-                            if 'Winner' in date or "goalscorer" in date or 'vainqueur' in date:
-                                continue
-
-                            zebet_count_games += 1
-
-                            if zebet_count_games > 10:
-                                break
-
-                            try:
-                                date = unidecode.unidecode(game_info[0])
-                                
-                                teamA = team_names_maping[unidecode.unidecode(str(game_info[2]).lower().strip())]
-                                teamB = team_names_maping[unidecode.unidecode(str(game_info[6]).lower().strip())]
-                            except KeyError:
-                                any_errors = False
-                                print(" Key  Error  caught in mapper your zebet parse func. block call --  :( ..... ")
-                                continue  
-
-                            teamAWinOdds = float(game_info[1].replace(',','.'))
-
-                            draw_odds    = float(game_info[3].replace(',','.'))
-                            teamBWinOdds = float(game_info[5].replace(',','.'))
-                            teams = teamA + ' - ' + teamB
-
-                            full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                            full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
-                            full_all_bookies_allLeagues_match_data[ zebet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
-
-                except NoSuchElementException:
-                    any_errors = False
-                    print("Error  caught in your ZEBET parse func. block call --  :( ..... ")
-                    continue
-
-            #full path copied from sourcecode tool       
-            #/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]
-            start_winimax = time.time()
-            if winimax in sites :        
-                print('in winimax ' +   competition  + ' pre-match parsing .... \n \n')   
-                #ompetition   =  compettition_ #split_match_data_str[1]  
-                match_count_wini = 0
-                                                                                      
-                ligue1_games_nested_gamesinfo_winimax = driver.find_elements_by_xpath('/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div')                                    
-                ligue1_games_nested_gamesinfo_winimax_2 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div') 
-                ligue1_games_nested_gamesinfo_winimax_3 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div/div[1]/div/div/div/div')    
-                ligue1_games_nested_gamesinfo_winimax_4 = driver.find_elements_by_xpath('//*[@id="app-inner"]/span/div/div/div[2]/div/section/div[2]/div[1]/div/div')                                                                
-                if not  ligue1_games_nested_gamesinfo_winimax:
-                    ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_2   
-                    if not   ligue1_games_nested_gamesinfo_winimax:
-                        ligue1_games_nested_gamesinfo_winimax =  ligue1_games_nested_gamesinfo_winimax_3
-                        if not ligue1_games_nested_gamesinfo_winimax_3:
-                            ligue1_games_nested_gamesinfo_winimax = ligue1_games_nested_gamesinfo_winimax_4
-                                                                                                                                                                    # #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
-                # TEST _ CHANGE Loop var to the live one here temporarily
-                for matches in ligue1_games_nested_gamesinfo_winimax: #ligue1_games_nested_gamesinfo_winimax_live_footy:  # ligue1_games_nested_gamesinfo_winimax:                 #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
-                    if matches.rect['height'] < 50.0:
-                        #check if you get a non match day like - alternative betting type header
-                        # (occues at the end of the ligue one games list on winimax pro ejemplo0)
-                        # if not (any(char.isdigit() for char in matches.text)):
-                        #    continue
-                        if find_substring("BETS ON THE ", matches.text):
-                            break
-                        date = unidecode.unidecode(matches.text)   
-                        continue
-                    
-                    longer_info_match = True
-                    if '%' not in matches.text:
-                        longer_info_match = False
-
-                    time.sleep(wait_time12)
-                    split_match_data_str = matches.text.split('\n')
-                    if len(split_match_data_str) >= 4:
-                        # check_teams_in_str = [True for y in All_ligue1_team_list if find_substring(y,unidecode.unidecode(matches.text).lower())]
-
-                ## !! will have to change this later as its not general enough to not miss NB games - here as winimax can have too many games in its pages and take too long parse just ewhats neeeded
-                        match_count_wini += 1
-
-                        if match_count_wini > 10:
-                            break
-
-                        # if not check_teams_in_str:
-                        #     continue
-                        #time.sleep(wait_time12) 
-                        separate_team_names = split_match_data_str[0].split(' vs ')
-                        try:
-                            teamA = team_names_maping[unidecode.unidecode(separate_team_names[0]).lower().strip()]
-                            teamB = team_names_maping[unidecode.unidecode(separate_team_names[1]).lower().strip()]
-                        except ValueError:
-                            any_errors = False
-                            print(" Value  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
-                            continue
-                        except KeyError:
-                            any_errors = False
-                            print(" Key  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
-                            continue            
-  
-                        try :
                             time.sleep(wait_time12)
-                            if longer_info_match:
-                                teamAWinOdds  = float(split_match_data_str[2].replace(',','.'))
-                                draw_odds     = float(split_match_data_str[5].replace(',','.'))
-                                teamBWinOdds  = float(split_match_data_str[8].replace(',','.'))
+                            split_match_data_str = matches.text.split('\n')
+                            if len(split_match_data_str) >= 4:
+                                # check_teams_in_str = [True for y in All_ligue1_team_list if find_substring(y,unidecode.unidecode(matches.text).lower())]
 
-                            else:
-                                teamAWinOdds  = float(split_match_data_str[2].replace(',','.'))
-                                draw_odds     = float(split_match_data_str[4].replace(',','.'))
-                                teamBWinOdds  = float(split_match_data_str[6].replace(',','.'))             
+                        ## !! will have to change this later as its not general enough to not miss NB games - here as winimax can have too many games in its pages and take too long parse just ewhats neeeded
+                                match_count_wini += 1
 
-                        except ValueError:
-                            any_errors = False
-                            print(" Value  Error  caught in your winamax parse func. block call --  :( ..... ")
-                            continue
+                                if match_count_wini > 10:
+                                    break
 
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teamA +  ' - ' + teamB].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teamA +  ' - ' + teamB].append(draw_odds)
-                        full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + competition.lower() + '_' + teamA +  ' - ' + teamB].append(teamBWinOdds)
-
-                end_winimax = time.time()  
-                tot_winimax +=  end_winimax - start_winimax
-                print('time taken to process winimax was = ' + str(end_winimax - start_winimax))
-
-    ## TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!    
-            
-            ## somethin wrong with assumed html in link - think i must navigate all the way from base url with button click and hfers links etc
-
-            start_cbet = time.time()  
-            cbet_win_odds_indx  = 4
-            cbet_draw_odds_indx = 5
-            cbet_lose_odds_indx = 6
-            #print('time taken to process unibet was = ' + str(start_unibet - end_unibet))
-            if cbet in sites :        
-                time.sleep(wait_time12)
-                #time.sleep(wait_time12)     
-                #time.sleep(wait_time12) 
-                #driver.implicitly_wait(13)
-                print('in cbet ' +   competition  + ' pre-match parsing .... \n \n')   
-                #competition  =  compettition_ #split_match_data_str[1]    
-                
-                try:
-                    #WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,'/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul/li')))
-                    ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
-                    ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/main') #body/div[1]/div/div[2]/div[1]/div/section/section/ul') #'/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]')                                    
-                except:
-                    print('error in Cbet trying to read webelement - first list of games..., wait a sec and retry...')
-                    time.sleep(wait_time12)
-                    ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
-                    ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/main') #body/div[1]/div 
-                    pass
-
-                #ligue1_games_gamesinfo_cbet  = ligue1_games_nested_gamesinfo_cbet
-                time.sleep(wait_time12) 
-                if not  ligue1_games_nested_gamesinfo_cbet_2:
-                    ligue1_games_gamesinfo_cbet = ligue1_games_nested_gamesinfo_cbet
-
-                    try:
-                        iframe_     = ligue1_games_nested_gamesinfo_cbet_2[0].find_element_by_xpath('.//iframe')
-                    except IndexError:
-                        print('Key error caught in cbet parsing, continuing ...')
-                        continue 
-                else:    
-
-                    ligue1_games_gamesinfo_cbet = ligue1_games_nested_gamesinfo_cbet
-            
-                    try:
-                        iframe_     = ligue1_games_nested_gamesinfo_cbet_2[0].find_element_by_xpath('.//iframe')
-                    except IndexError:
-                        print('Key error caught in cbet parsing, continuing ...')
-                        continue  
-
-                iframe_link = iframe_.get_attribute('src')
-                driver.get(iframe_link)
-                ## Now in the internal links html and can crawl and scrAPE  as per usual
-
-            #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
-
-                date = '20 decembre' #unidecode.unidecode('?? ') 
-                #time.sleep(wait_time12)
-                #time.sleep(wait_time12)
-
-                wait_time37 = random.randint(3,6)
-                #print('second rand wait time = ' + str(wait_time37))
-                time.sleep(wait_time37)  
-                                                                
-                league_selector =  driver.find_elements_by_xpath('//*[@id="prematch-top-leagues"]/ul/li')                    
-                for leagues in league_selector:
-
-                    if 'Ligue 1' in leagues.text and 'Ligue1' in compettition[0]:
-                        leagues.click()
-                        print(' league found in Cbet is : Ligue 1 - France' + ' ...') 
-                        break
-
-                    elif 'champions' in leagues.text.lower() and 'champions' in compettition[0]:
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('Champions league ') + ' ...') 
-                        break
-
-                    elif 'premier league' in leagues.text.lower() and 'premier-league' in compettition[0]:
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('Premier league -- England') + ' ...') 
-                        break
-
-                    elif 'bundesliga' in leagues.text.lower() and 'bundesliga' in compettition[0].lower():
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('Bundesliga - Germany') + ' ...') 
-                        break
-
-                    elif 'la liga' in leagues.text.lower() and ( 'laliga' in compettition[0].lower() or 'liga-primera' in compettition[0].lower() or 'la-liga' in compettition[0]):
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('La Liga - Espana !! `') + ' ...') 
-                        break
-
-                    elif 'serie a' in leagues.text.lower() and 'serie-a' in compettition[0]:
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('Serie A italia') + ' ...') 
-                        break    
-
-                    elif 'europa' in leagues.text.lower() and 'europa' in compettition[0]:
-                        leagues.click()
-                        print(' league found in Cbet is : ' + str('Europa shite league') + ' ...') 
-                        break    
-
-                    else:
-                        print('No league found in Cbet so ... GAN ! ...')                
-
-                time.sleep(wait_time12)
-                time.sleep(wait_time37) 
-                #matches_soccer_info_2 = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
-                matches_soccer_info_2 =  driver.find_elements_by_xpath( '//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
-                for matches in matches_soccer_info_2:
-
-                    split_match_data_str = matches.text.split('\n') 
-
-                    if len(split_match_data_str) >= 4:
-                        time.sleep(wait_time12)
-                        teams = unidecode.unidecode(split_match_data_str[3]).lower().strip() # + unidecode.unidecode(split_match_data_str[5]).lower().strip(0)
-                        #teams = split_match_data_str[2] #+ '_' + split_match_data_str[6]
-                        try:
-                            teams_split = teams.split('-')
-
-                            if len(teams_split) == 2:
-                                teamA = team_names_maping[unidecode.unidecode(teams_split[0]).lower().strip()]
-                                teamB = team_names_maping[unidecode.unidecode(teams_split[1]).lower().strip()]
-                                teams = teamA + ' - ' + teamB
-
-                        except KeyError:
-                            print('Key error caught in cbet parsing, continuing ...')
-                            continue 
-
-                        try:
-                            teamAWinOdds = split_match_data_str[4].replace(',','.')
-                            draw_odds    = split_match_data_str[5].replace(',','.')
-                            teamBWinOdds = split_match_data_str[6].replace(',','.')
-                        except IndexError:
-                            print('Index error caught in cbet parsing, continuing ...')
-                            continue    
-                            
-                        try:    
-                        
-                            full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamAWinOdds)) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                            full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(draw_odds))
-                            full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower()].append(float(teamBWinOdds))
-                        
-                        except  ValueError:
-                            print("error  in CBET site parsing... ") 
-                            continue
-
-
-                end_cbet = time.time()  
-                tot_cbet +=  end_cbet - start_cbet
-                print('time taken to process cbet was = ' + str(start_cbet - end_cbet))
-                # url = sites
-                # headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
-                # res = requests.get(url=url, headers=headers).json()
-                # print(res)
-                # for i in res['data']: #['list']:
-                #     print(i)                
-
-    # Hiddemn Div here needs fixing:
-    # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
-
-            if sports_bwin in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in sports_bwin ' +   competition  + ' pre-match parsing .... \n \n')   
-                #competition   =  compettition_ 
-
-                time.sleep(wait_time12) 
-                #try:
-                time.sleep(wait_time12) 
-                # relative path to all upcoming ligue 1 games    
-                #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group")
-                #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event")                
-                                                                            #"/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group"    
-                                                                            #/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event[1]   
-                resultElements_all_dates = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event')
-
-                #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
-                #end = timeit.time
-                time.sleep(wait_time12) 
-                #print('Time taken to scrape unibets champ league shit was = ' + str(end - start)) 
-                #time.sleep(wait_time12)
-                for index,groups in enumerate(resultElements_all_dates):
-                    #all_games =  games.find_elements_by_xpath('//ms-event')
-                    time.sleep(wait_time12)
-
-                    #print(groups.text + '\n\n')
-                    if '/' in groups.text:
-                        bwin_parts = groups.text.split('/')
-                        delimit_1 = bwin_parts[0].split('\n')
-                        time.sleep(wait_time12)
-                        if index == 0:
-                            if len(bwin_parts) == 2:
-                                date = unidecode.unidecode(bwin_parts[0])
-
-                            if len(bwin_parts) == 3:    
-                                date = unidecode.unidecode(delimit_1[-1] + bwin_parts[1] + bwin_parts[-1].split('\n')[0])
-                    else:
-                        bwin_parts = groups.text
-                        delimit_1 = groups.text.split('\n')
-
-                    #if unidecode.unidecode(date.lower()) not in french_dates_list:
-                    #    date = date_ 
-
-                        #for i in range(len(parts)-1):
-                    delimit_2 = bwin_parts[-1].split('\n')
-
-                    if len(delimit_1) >= 2 and len(delimit_2) >= 6 :
-                        
-                        time.sleep(wait_time12)
-
-                        ##   !!!!  NB !!!! DEF IMPLENT THE TRY - except as can easily hit non existat keyError and just continue on ... !!!!
-                        #try
-                        #teams =  ligue1_teamNamesMap[unidecode.unidecode(parts[0].split('\n')[-3])] + ' - ' +  ligue1_teamNamesMap[unidecode.unidecode(parts[0].split('\n')[-2])]            
-                        teams =  team_names_maping[unidecode.unidecode(bwin_parts[0].split('\n')[-3]).lower().strip()] + ' - ' +  team_names_maping[unidecode.unidecode(bwin_parts[0].split('\n')[-2]).lower().strip()]   
-
-                        teamAWinOdds = delimit_2[1]
-                        time.sleep(wait_time12)
-                        draw_odds = delimit_2[2]                           
-                        teamBWinOdds = delimit_2[3]
-
-                        time.sleep(wait_time12)
-                        try:
-
-                            full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower() ].append(float(teamAWinOdds))                
-                            full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower() ].append(float(draw_odds))    
-                            full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + competition.lower() + '_' + teams.lower() ].append(float(teamBWinOdds))  
-                            #time.sleep(wait_time13)      
-                        except  ValueError:
-                            print("error  in sports.bwin site parsing... ")
-
-
-
-            start_parion = time.time()                                          
-    # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
-            parion_win_odds_indx  = 3
-            parion_draw_odds_indx = 4
-            parion_lose_odds_indx = 5
-            if parionbet in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in parionbet ' +   competition   + ' pre-match prsing .... \n \n')
-                #competition = compettition_ 
-
-                time.sleep(wait_time12)
-                # relative path to all upcoming ligue 1 games    
-                #resultParionElements = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/wpsel-app/lib-sport-enligne/div[1]/wpsel-home/div')
-                resultParionElements = driver.find_elements_by_xpath('/html/body/div[2]/div[3]/wpsel-app/lib-sport-enligne/div[1]/wpsel-sport/wpsel-sport-game/div/div/div[1]/section/div')   
-
-                resultParionElements_2 = driver.find_elements_by_xpath(' /html/body/div[2]/div[3]/wpsel-app/lib-sport-enligne/div[1]/wpsel-sport/wpsel-sport-game/div/div/div')
-
-                for block in resultParionElements_2:
-                    if '+' in block.text:
-                        sections_dated = block.text.split('+')
-                    #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
-                    #end = timeit.time
-                    #print('Time taken to scrape unibets champ league shit was = ' + str(end - start)) 
-
-                        date = unidecode.unidecode(sections_dated[0].split('\n')[0])
-
-                    else:
-                        try:
-                            sections_dated = block.text
-                        except  ValueError:
-                            print("error  in parion site parsing... ")
-    
-                        if '\n' in sections_dated:
-                            date = unidecode.unidecode(sections_dated.split('\n')[0])
-                        else:
-                            date = '01/Fevrier/2021'    
-
-                    for section in sections_dated:
-                        if '\n' not in section:
-                            continue
-                        split_match_data_str = section.split('\n')    
-                        #date = unidecode.unidecode(split_match_data_str[0])                    time.sleep(wait_time12)
-                        #all_games =  games.find_elements_by_xpath('//ms-event')
-                        #for game in all_games:
-                        
-                            #print(game.text)  
-                        #split_match_data_str = games.text.split('\n') 
-
-                        if len(split_match_data_str) >= 6:
-
-                            if ' - ' in  split_match_data_str[1]:
-                                separate_team_names = split_match_data_str[1].split(' - ')
+                                # if not check_teams_in_str:
+                                #     continue
+                                #time.sleep(wait_time12) 
+                                separate_team_names = split_match_data_str[0].split(' vs ')
                                 try:
                                     teamA = team_names_maping[unidecode.unidecode(separate_team_names[0]).lower().strip()]
                                     teamB = team_names_maping[unidecode.unidecode(separate_team_names[1]).lower().strip()]
-                                except KeyError:
-                                    print('KeyError in parionBet parsing, continuing on ...')
+                                except ValueError:
+                                    any_errors = False
+                                    print(" Value  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
                                     continue
+                                except KeyError:
+                                    any_errors = False
+                                    print(" Key  Error  caught in mapper your winamax parse func. block call --  :( ..... ")
+                                    continue            
+        
+                                try :
+                                    time.sleep(wait_time12)
+                                    if longer_info_match:
+                                        teamAWinOdds  = float(split_match_data_str[2].replace(',','.'))
+                                        draw_odds     = float(split_match_data_str[5].replace(',','.'))
+                                        teamBWinOdds  = float(split_match_data_str[8].replace(',','.'))
 
-                                #if teamA in comon_TeamNames_mapper and teamB in comon_TeamNames_mapper:
-
-                                date = unidecode.unidecode(split_match_data_str[2])
-                                teams = teamA + ' - ' + teamB                          
-                                #competition =  compettition_ 
-
-                                try:
-
-                                    teamAWinOdds  = float(split_match_data_str[3].replace(',','.'))
-                                    draw_odds     = float(split_match_data_str[4].replace(',','.'))
-                                    teamBWinOdds  = float(split_match_data_str[5].replace(',','.'))
-
-                                    full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                                    full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
-                                    full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
+                                    else:
+                                        teamAWinOdds  = float(split_match_data_str[2].replace(',','.'))
+                                        draw_odds     = float(split_match_data_str[4].replace(',','.'))
+                                        teamBWinOdds  = float(split_match_data_str[6].replace(',','.'))             
 
                                 except ValueError:
-                                    print('value error in parion in float casting odds...')    
-                                    continue        
+                                    any_errors = False
+                                    print(" Value  Error  caught in your winamax parse func. block call --  :( ..... ")
+                                    continue
+
+                                full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA +  ' - ' + teamB].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA +  ' - ' + teamB].append(draw_odds)
+                                full_all_bookies_allLeagues_match_data[ winimax + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teamA +  ' - ' + teamB].append(teamBWinOdds)
+
+                        end_winimax = time.time()  
+                        tot_winimax +=  end_winimax - start_winimax
+                        print('time taken to process winimax was = ' + str(end_winimax - start_winimax))
+
+            ## TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!    
+                    
+                    ## somethin wrong with assumed html in link - think i must navigate all the way from base url with button click and hfers links etc
+
+                    start_cbet = time.time()  
+                    cbet_win_odds_indx  = 4
+                    cbet_draw_odds_indx = 5
+                    cbet_lose_odds_indx = 6
+                    #print('time taken to process unibet was = ' + str(start_unibet - end_unibet))
+                    if cbet in sites :        
+                        time.sleep(wait_time12)
+                        #time.sleep(wait_time12)     
+                        #time.sleep(wait_time12) 
+                        #driver.implicitly_wait(13)
+                        print('in cbet ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')   
+                        #compettition  =  compettition_ #split_match_data_str[1]    
+                        
+                        try:
+                            #WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,'/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul/li')))
+                            ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
+                            ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/main') #body/div[1]/div/div[2]/div[1]/div/section/section/ul') #'/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]')                                    
+                        except:
+                            print('error in Cbet trying to read webelement - first list of games..., wait a sec and retry...')
+                            time.sleep(wait_time12)
+                            ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
+                            ligue1_games_nested_gamesinfo_cbet_2 = driver.find_elements_by_xpath('/html/body/main') #body/div[1]/div 
+                            pass
+
+                        #ligue1_games_gamesinfo_cbet  = ligue1_games_nested_gamesinfo_cbet
+                        time.sleep(wait_time12) 
+                        if not  ligue1_games_nested_gamesinfo_cbet_2:
+                            ligue1_games_gamesinfo_cbet = ligue1_games_nested_gamesinfo_cbet
+
+                            try:
+                                iframe_     = ligue1_games_nested_gamesinfo_cbet_2[0].find_element_by_xpath('.//iframe')
+                            except IndexError:
+                                print('Key error caught in cbet parsing, continuing ...')
+                                continue 
+                        else:    
+
+                            ligue1_games_gamesinfo_cbet = ligue1_games_nested_gamesinfo_cbet
+                    
+                            try:
+                                iframe_     = ligue1_games_nested_gamesinfo_cbet_2[0].find_element_by_xpath('.//iframe')
+                            except IndexError:
+                                print('Key error caught in cbet parsing, continuing ...')
+                                continue  
+
+                        iframe_link = iframe_.get_attribute('src')
+                        driver.get(iframe_link)
+                        ## Now in the internal links html and can crawl and scrAPE  as per usual
+
+                    #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
+
+                        date = '20 decembre' #unidecode.unidecode('?? ') 
+                        #time.sleep(wait_time12)
+                        #time.sleep(wait_time12)
+
+                        wait_time37 = random.randint(3,6)
+                        #print('second rand wait time = ' + str(wait_time37))
+                        time.sleep(wait_time37)  
+                                                                        
+                        league_selector =  driver.find_elements_by_xpath('//*[@id="prematch-top-leagues"]/ul/li')                    
+                        for leagues in league_selector:
+
+                            if 'Ligue 1' in leagues.text and 'Ligue1' in compettition[0]:
+                                leagues.click()
+                                print(' league found in Cbet is : Ligue 1 - France' + ' ...') 
+                                break
+
+                            elif 'champions' in leagues.text.lower() and 'champions' in compettition[0]:
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('Champions league ') + ' ...') 
+                                break
+
+                            elif 'premier league' in leagues.text.lower() and 'premier-league' in compettition[0]:
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('Premier league -- England') + ' ...') 
+                                break
+
+                            elif 'bundesliga' in leagues.text.lower() and 'bundesliga' in compettition[0].lower():
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('Bundesliga - Germany') + ' ...') 
+                                break
+
+                            elif 'la liga' in leagues.text.lower() and ( 'laliga' in compettition[0].lower() or 'liga-primera' in compettition[0].lower() or 'la-liga' in compettition[0]):
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('La Liga - Espana !! `') + ' ...') 
+                                break
+
+                            elif 'serie a' in leagues.text.lower() and 'serie-a' in compettition[0]:
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('Serie A italia') + ' ...') 
+                                break    
+
+                            elif 'europa' in leagues.text.lower() and 'europa' in compettition[0]:
+                                leagues.click()
+                                print(' league found in Cbet is : ' + str('Europa shite league') + ' ...') 
+                                break    
 
                             else:
+                                print('No league found in Cbet so ... GAN ! ...')                
 
-                                if  ' - ' in  split_match_data_str[2]:
-                                    separate_team_names = split_match_data_str[2].split(' - ')
-
-                                    try:
-                                        teamA = team_names_maping[unidecode.unidecode(separate_team_names[0]).lower().strip()]
-                                        teamB = team_names_maping[unidecode.unidecode(separate_team_names[1]).lower().strip()]
-
-                                    except KeyError:
-                                        print('KeyError in parionBet parsing, continuing on ...')
-                                        continue
-
-                                    #if teamA in comon_TeamNames_mapper and teamB in comon_TeamNames_mapper:
-
-                                    date = unidecode.unidecode(split_match_data_str[0])
-                                    teams = teamA + ' - ' + teamB                          
-                                    #competition =  compettition_                                    
-
-                                    try:
-
-                                        teamAWinOdds  = float(split_match_data_str[4].replace(',','.'))
-                                        draw_odds     = float(split_match_data_str[5].replace(',','.'))
-                                        teamBWinOdds  = float(split_match_data_str[6].replace(',','.'))
-                                        
-                                        full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                                        full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
-                                        full_all_bookies_allLeagues_match_data[ parionbet + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
-
-                                    except ValueError:
-                                        print('value error in parion in float casting odds...')    
-            
-                                        continue      
-
-                end_parion = time.time()  
-                tot_parionbet +=  end_parion - start_parion
-                print('time taken to process parion was = ' + str(end_parion - start_parion )) 
-
-            start_pmu = time.time() 
-            ## canr SEEM TO RUN AT AL WHEN LIVE LIGUE ONE GAMES ARE ON !??                
-            #https://paris-sportifs.pmu.fr/pari/competition/169/football/ligue-1-uber-eats%C2%AE
-
-            paris_pmu_win_odds_indx = 1
-            paris_pmu_draw_odds_indx = 2
-            paris_pmu_lose_odds_indx = 3
-            if paris_sportifs_pmu[8:26] in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
-                print('in PMU beting site ' + competition  + ' pre-match prsing .... \n \n')
-                #competition = compettition_ 
-                pmu_loop_counter = 0
-
-                # relative path to all upcoming ligue 1 games    
-                try:
-                    resultPmuElements = driver.find_elements_by_xpath("//*[contains(@class,'ms-active-highlight')]")
-                    time.sleep(wait_time12)
-                    resultPmuElements_1 = driver.find_elements_by_xpath("//*[@id='tabs-second_center-block-0']/div/div/div/div/div/div/div/div")
-                except StaleElementReferenceException:
-                    print('value error in parion in float casting odds...')    
-                    continue 
-                
-                ligue1_games_info_pmu = resultPmuElements_1
-                if not resultPmuElements_1:
-                    ligue1_games_info_pmu = resultPmuElements
-
-                if not  ligue1_games_info_pmu:
-                    continue   
-                
-                #//*[@id="tabs-second_center-block-0"]/div/div/div/div/div/div/div/div
-                #//*[@id="table-content-20201220_0_2"]/div/div[2]
-                #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
-                #end = timeit.time
-                #print('Time taken to scrape unibets champ league shit was = ' + str(end - start)) 
-                game_info = ligue1_games_info_pmu[0].text.split('+')
-                date = unidecode.unidecode(game_info[0].split('\n')[0])
-                for games in game_info:
-                    #all_games =  games.find_elements_by_xpath('//ms-event')
-                    #time.sleep(wait_time12)
-                        #[0].split('\n')
-                    #for game in game_info:
-
-                    pmu_loop_counter += 1
-                    if pmu_loop_counter > 20 :
-                        print('breaking out of crazy pmu loop.. ! as it goes on ad infinitum, lool')
-                        break
-                 
-                    matches = games.split('//')            
-                    if len(matches) >= 2 :
                         time.sleep(wait_time12)
-                        #for match in matches :
-                        single_game_left  = matches[0].split('\n')
-                        single_game_right = matches[1].split('\n')
+                        time.sleep(wait_time37) 
+                        #matches_soccer_info_2 = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
+                        matches_soccer_info_2 =  driver.find_elements_by_xpath( '//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')
+                        for matches in matches_soccer_info_2:
 
-                        if len(single_game_left) < 1 or len(single_game_right) < 4:
-                            break
-                        
+                            split_match_data_str = matches.text.split('\n') 
+
+                            if len(split_match_data_str) >= 4:
+                                time.sleep(wait_time12)
+                                teams = unidecode.unidecode(split_match_data_str[3]).lower().strip() # + unidecode.unidecode(split_match_data_str[5]).lower().strip(0)
+                                #teams = split_match_data_str[2] #+ '_' + split_match_data_str[6]
+                                try:
+                                    teams_split = teams.split('-')
+
+                                    if len(teams_split) == 2:
+                                        teamA = team_names_maping[unidecode.unidecode(teams_split[0]).lower().strip()]
+                                        teamB = team_names_maping[unidecode.unidecode(teams_split[1]).lower().strip()]
+                                        teams = teamA + ' - ' + teamB
+
+                                except KeyError:
+                                    print('Key error caught in cbet parsing, continuing ...')
+                                    continue 
+
+                                try:
+                                    teamAWinOdds = split_match_data_str[4].replace(',','.')
+                                    draw_odds    = split_match_data_str[5].replace(',','.')
+                                    teamBWinOdds = split_match_data_str[6].replace(',','.')
+                                except IndexError:
+                                    print('Index error caught in cbet parsing, continuing ...')
+                                    continue    
+                                    
+                                try:    
+                                
+                                    full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower()].append(float(teamAWinOdds)) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                    full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower()].append(float(draw_odds))
+                                    full_all_bookies_allLeagues_match_data[ cbet + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower()].append(float(teamBWinOdds))
+                                
+                                except  ValueError:
+                                    print("error  in CBET site parsing... ") 
+                                    continue
+
+
+                        end_cbet = time.time()  
+                        tot_cbet +=  end_cbet - start_cbet
+                        print('time taken to process cbet was = ' + str(start_cbet - end_cbet))
+                        # url = sites
+                        # headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
+                        # res = requests.get(url=url, headers=headers).json()
+                        # print(res)
+                        # for i in res['data']: #['list']:
+                        #     print(i)                
+
+            # Hiddemn Div here needs fixing:
+            # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
+
+                    if sports_bwin in sites :          #.startswith('sports.bwin',8) or sites.startswith('sports.bwin'9) :
+                        print('in sports_bwin ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')   
+                        #compettition   =  compettition_ 
+
+                        time.sleep(wait_time12) 
+                        #try:
+                        time.sleep(wait_time12) 
+                        # relative path to all upcoming ligue 1 games    
+                        #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group")
+                        #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event")                
+                                                                                    #"/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group"    
+                                                                                    #/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event[1]   
+                        resultElements_all_dates = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event')
+
+                        #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
+                        #end = timeit.time
+                        time.sleep(wait_time12) 
+                        #print('Time taken to scrape unibets champ league shit was = ' + str(end - start)) 
                         #time.sleep(wait_time12)
-                        try:
-                            teamA = team_names_maping[unidecode.unidecode(single_game_left[-1]).lower().strip()]
-                            teamB = team_names_maping[unidecode.unidecode(single_game_right[0]).lower().strip()]
-                        except KeyError:
-                            print('value error in parion in float casting odds...')    
-                            continue                        
-                            #time.sleep(wait_time12)
-                        try:
-                            teamAWinOdds = float(single_game_right[1].replace(',','.'))
-                            draw_odds    = float(single_game_right[2].replace(',','.'))
-                            teamBWinOdds = float(single_game_right[3].replace(',','.'))
+                        for index,groups in enumerate(resultElements_all_dates):
+                            #all_games =  games.find_elements_by_xpath('//ms-event')
+                            time.sleep(wait_time12)
 
-                        except ValueError:
-                            print('value error in parion in float casting odds...')    
-                            continue
+                            #print(groups.text + '\n\n')
+                            if '/' in groups.text:
+                                bwin_parts = groups.text.split('/')
+                                delimit_1 = bwin_parts[0].split('\n')
+                                time.sleep(wait_time12)
+                                if index == 0:
+                                    if len(bwin_parts) == 2:
+                                        date = unidecode.unidecode(bwin_parts[0])
 
-                        #time.sleep(wait_time12)
-                        teams = teamA + ' - ' + teamB
-                        init_index_pmu_name = 8
-                        end_index_pmu_name = 26                                               
-                        full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
-                        full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(draw_odds)
-                        full_all_bookies_allLeagues_match_data[ paris_sportifs_pmu[8:26].lower() + '_' + date.lower() + '_' + competition.lower() + '_' + teams].append(teamBWinOdds)
+                                    if len(bwin_parts) == 3:    
+                                        date = unidecode.unidecode(delimit_1[-1] + bwin_parts[1] + bwin_parts[-1].split('\n')[0])
+                            else:
+                                bwin_parts = groups.text
+                                delimit_1 = groups.text.split('\n')
 
-                end_pmu = time.time()  
-                tot_pmu +=  end_pmu - start_pmu
-                print('time taken to process pmu was = ' + str(end_pmu - start_pmu))
-            #     except NoSuchElementException:
-                    # any_errors = False
-                    # print("Error  caught in your pmu sports parse func. block ..... :( ")
-                    # continue 
+                            #if unidecode.unidecode(date.lower()) not in french_dates_list:
+                            #    date = date_ 
 
-            if 'draftkings' in sites :
+                                #for i in range(len(parts)-1):
+                            delimit_2 = bwin_parts[-1].split('\n')
 
-            #     joon = driver.find_elements_by_xpath('/html/body/div[1]/div/div[3]/div[3]/div/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/div/div')
-            #     for games in joon :
+                            if len(delimit_1) >= 2 and len(delimit_2) >= 6 :
+                                
+                                time.sleep(wait_time12)
 
-            ## Choose upcoming (not live) games
+                                ##   !!!!  NB !!!! DEF IMPLENT THE TRY - except as can easily hit non existat keyError and just continue on ... !!!!
+                                #try
+                                #teams =  ligue1_teamNamesMap[unidecode.unidecode(parts[0].split('\n')[-3])] + ' - ' +  ligue1_teamNamesMap[unidecode.unidecode(parts[0].split('\n')[-2])]            
+                                teams =  team_names_maping[unidecode.unidecode(bwin_parts[0].split('\n')[-3]).lower().strip()] + ' - ' +  team_names_maping[unidecode.unidecode(bwin_parts[0].split('\n')[-2]).lower().strip()]   
 
-            #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__header.sportsbook-custom-scrollbar-darkest
+                                teamAWinOdds = delimit_2[1]
+                                time.sleep(wait_time12)
+                                draw_odds = delimit_2[2]                           
+                                teamBWinOdds = delimit_2[3]
 
-                pg_root_0 = driver.find_element_by_id('root')
-                try:
-                    pg_root = pg_root_0.find_element_by_class_name("sportsbook-responsive-card-container") #__header.sportsbook-custom-scrollbar-darkest")
+                                time.sleep(wait_time12)
+                                try:
+
+                                    full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower() ].append(float(teamAWinOdds))                
+                                    full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower() ].append(float(draw_odds))    
+                                    full_all_bookies_allLeagues_match_data[sports_bwin + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams.lower() ].append(float(teamBWinOdds))  
+                                    #time.sleep(wait_time13)      
+                                except  ValueError:
+                                    print("error  in sports.bwin site parsing... ")
+
+
+
+                    start_parion = time.time()                                          
+            # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
+                    parion_win_odds_indx  = 3
+                    parion_draw_odds_indx = 4
+                    parion_lose_odds_indx = 5
+     
+                    if 'draftkings' in sites :
+
+                    #     joon = driver.find_elements_by_xpath('/html/body/div[1]/div/div[3]/div[3]/div/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/div/div')
+                    #     for games in joon :
+
+                    ## Choose upcoming (not live) games
 
                     #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__header.sportsbook-custom-scrollbar-darkest
 
-                except NoSuchElementException:
-                    any_errors = False
-                    print("Error  caught in your draftkings sports parse func. block ..... :( ")
-                    #continue
-                except StaleElementReferenceException:
-                    print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-                    continue         
-                
-                ## get to clicking soccer
-                try:
+        #                 pg_root_0 = driver.find_element_by_id('root')
+        #                 try:
+        #                     pg_root = pg_root_0.find_element_by_class_name("sportsbook-responsive-card-container") #__header.sportsbook-custom-scrollbar-darkest")
 
-                    event_types = pg_root.find_element_by_id("game_category_Game Lines") 
-                    # event_types_full_txt = pg_root.text
-                    # event_types = event_types_full_txt.split('\n')
+        #                     #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__header.sportsbook-custom-scrollbar-darkest
 
-                    #in_game_btn = event_types.find_element_by_xpath("./../")
+        #                 except NoSuchElementException:
+        #                     any_errors = False
+        #                     print("Error  caught in your draftkings sports parse func. block ..... :( ")
+        #                     #continue
+        #                 except StaleElementReferenceException:
+        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
+        #                     continue         
+                        
+        #                 ## get to clicking soccer
+        #                 try:
 
-                    # for event_type in event_types:
- 
-                    #     # event = event_type.get_id()
+        #                     event_types = pg_root.find_element_by_id("game_category_Game Lines") 
+        #                     # event_types_full_txt = pg_root.text
+        #                     # event_types = event_types_full_txt.split('\n')
 
-                    #     if 'game lines' in event_type.lower():
-                    #         time.sleep(wait_time12)
-                    
-                    event_types.click()
+        #                     #in_game_btn = event_types.find_element_by_xpath("./../")
 
-                    #pg_root = pg_roots.find_element_by_class_name('sportsbook-featured-page dkbetslip')
+        #                     # for event_type in event_types:
+        
+        #                     #     # event = event_type.get_id()
 
-                except NoSuchElementException:
-                    any_errors = False
-                    print("Error  caught in your pmu sports parse func. block ..... :( ")
-                    #continue 
+        #                     #     if 'game lines' in event_type.lower():
+        #                     #         time.sleep(wait_time12)
+                            
+        #                     event_types.click()
 
-                except StaleElementReferenceException:
-                    print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-                    continue 
+        #                     #pg_root = pg_roots.find_element_by_class_name('sportsbook-featured-page dkbetslip')
 
-                try:    
-                    time.sleep(wait_time12)
-                    #event_types_parent = event_types.parent # find_element_by_class_name('//../')
-                    sports_list_parent = pg_root_0.find_elements_by_class_name("sportsbook-tabbed-subheader")
-                    #sports_list_parent = pg_root.find_element_by_class_name("sportsbook-featured__featured-offers")
-                    time.sleep(wait_time12)
-                    #sports_list = sports_list_parent.find_element_by_class_name("sportsbook-responsive-card-container__header sportsbook-custom-scrollbar-darkest")
+        #                 except NoSuchElementException:
+        #                     any_errors = False
+        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
+        #                     #continue 
 
-                except NoSuchElementException:
-                    any_errors = False
-                    print("Error  caught in your pmu sports parse func. block ..... :( ")
-                    #continue 
+        #                 except StaleElementReferenceException:
+        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
+        #                     continue 
 
-                except StaleElementReferenceException:
-                    print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-                    continue 
+        #                 try:    
+        #                     time.sleep(wait_time12)
+        #                     #event_types_parent = event_types.parent # find_element_by_class_name('//../')
+        #                     sports_list_parent = pg_root_0.find_elements_by_class_name("sportsbook-tabbed-subheader")
+        #                     #sports_list_parent = pg_root.find_element_by_class_name("sportsbook-featured__featured-offers")
+        #                     time.sleep(wait_time12)
+        #                     #sports_list = sports_list_parent.find_element_by_class_name("sportsbook-responsive-card-container__header sportsbook-custom-scrollbar-darkest")
 
-                time.sleep(wait_time12)
-                # games = sports_list.find_elements_by_css_selector('a')
-                if sports_list_parent:
-                    games = sports_list_parent[-1].find_elements_by_css_selector('a')
-                
-                    time.sleep(wait_time12)
-                    for sports in games:
+        #                 except NoSuchElementException:
+        #                     any_errors = False
+        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
+        #                     #continue 
 
-                        sport = sports.text.lower()
-                        if 'soccer' in sport:
+        #                 except StaleElementReferenceException:
+        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
+        #                     continue 
+
+        #                 time.sleep(wait_time12)
+        #                 # games = sports_list.find_elements_by_css_selector('a')
+        #                 if sports_list_parent:
+        #                     games = sports_list_parent[-1].find_elements_by_css_selector('a')
+                        
+        #                     time.sleep(wait_time12)
+        #                     for sports in games:
+
+        #                         sport = sports.text.lower()
+        #                         if 'soccer' in sport:
+        #                             time.sleep(wait_time12)
+        #                             sports.click()
+        #                 else:
+        #                     print('missed sports_list+parent- list doesn exist...Error ...')            
+
+        # # "//*[contains(@class,'ms-active-highlight')]
+
+        #                 wait_time12 = random.randint(1,2)
+        #                 time.sleep(wait_time12)
+        #                 try:
+        #                     #bunny = pg_root.find_elements_by_xpath("//*[@contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
+        #                     socer_leagues_global = driver.find_elements_by_xpath("//*[contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
+
+        #                 except NoSuchElementException:
+        #                     any_errors = False
+        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
+        #                     #continue 
+
+        #                 except StaleElementReferenceException:
+        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
+        #                     continue 
+
+        #                 time.sleep(wait_time12)
+        #                 if socer_leagues_global:
+        #                     for league_names in socer_leagues_global:
+        #                         league = league_names.text.lower()
+        #                         #if 'MLS' in league:
+        #                         # testing wuth bundesliga for now as no MLS games le fail @ time of testing :
+        #                         if 'mls' in league:
+        #                             time.sleep(wait_time12)
+        #                             time.sleep(wait_time12)
+        #                             league_names.click()
+
+        #                 time.sleep(wait_time12)
+        #                 # Now lets looop thru the games and pick up the various requested odds, finally :
+
+        #                 #<div class="sportsbook-event-accordion__wrapper expanded"><div role="button" tabindex="0" aria-expanded="true" aria-label="Event Accordion for Bayern Munchen vs Augsburg" class="sportsbook-event-accordion__accordion" data-tracking="{&quot;target&quot;:&quot;ExpandEvent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;section&quot;:&quot;GamesComponent&quot;,&quot;sport&quot;:5312,&quot;league&quot;:88670568,&quot;value&quot;:&quot;Bayern Munchen vs Augsburg&quot;}"><a class="sportsbook-event-accordion__title" href="/event/180267546">Bayern Munchen vs Augsburg</a><span class="sportsbook-event-accordion__date"><span>SAT 9th APR 9:30AM</span></span><svg role="img" aria-label="Arrow pointing up icon" class="sportsbook__icon--arrow-up" fill="#ababab" width="12" height="12" viewBox="0 0 32 32"><path d="M16.032 6.144h-0.032l-14.624 14.656c-0.384 0.384-0.384 0.992 0 1.344l1.504 1.504c0.384 0.384 0.992 0.384 1.344 0l11.776-11.776h0.032l11.776 11.776c0.384 0.384 0.992 0.384 1.344 0l1.504-1.504c0.384-0.384 0.384-0.992 0-1.344l-14.624-14.656z"></path></svg></div><div class="sportsbook-event-accordion__children-wrapper"><ul class="game-props-card17"><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Bayern Munchen " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Bayern Munchen</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">-1000</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Draw " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Draw</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+900</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Augsburg " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Augsburg</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+2200</span></div></div></div></div></div></li></ul></div></div>
+
+        #                 socer_matches_forMLS = league_names.find_element_by_xpath('//*[@class="sportsbook-event-accordion__wrapper expanded"]')
+
+        #                 #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__body > div.sportsbook-responsive-card-container__card.selected > div > div.cards > div:nth-child(1) > div > div
+        #                 # 'ReactVirtualized__'
+        #                 check = 0
+
+
+                        #try:
+                        # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
+                        # sports_list = driver.find_element_by_xpath('//*[@class="col-3 widget-slot ng-star-inserted"]')   #"slot slot-single slot-header_bottom_items")
+                        # #'leaf-item list-item ng-star-inserted'
+                        # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
+                        # driver.get('https://sportsbook.draftkings.com/leagues/soccer/88670597')
+                        time.sleep(wait_time12)
+                        time.sleep(wait_time12)
+
+                        # keep taking the earloest sprt a user entered (box ticked on the website)
+                        # and go thru them until the list os sports is exhausted, then break out of the current loop
+                        sports_btn_val = input_sports[-index]
+                        index += 1
+
+                        if index == len(input_sports):
+                            break
+
+                        if sports_btn_val == 'soccer':
+                            driver.get('https://sportsbook.draftkings.com/sports/soccer')
+                        elif sports_btn_val == 'hockey':   
+                            driver.get('https://sportsbook.draftkings.com/sports/hockey')
+                        elif sports_btn_val == 'basketball':   
+
+                            driver.get('https://sportsbook.draftkings.com/sports/basketball')
+                        elif sports_btn_val == 'nfl':   
+                            driver.get('https://sportsbook.draftkings.com/sports/nfl')
+                        else:
+                            driver.get('https://sportsbook.draftkings.com/sports/tennis')
+
+                        time.sleep(wait_time12)
+                        wait_time35 = random.randint(3,5)
+                        time.sleep(wait_time35)
+                        time.sleep(wait_time12)
+                        try:
+                            #test_wrongPg_mls_btn = WebDriverWait(driver, 7).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Game Lines')))
+                            # mls_btn = WebDriverWait(driver, 7).until(EC.element_to_be_visible((By.LINK_TEXT, 'USA - MLS')))
+                            mls_btn = driver.find_element_by_link_text('USA - MLS')
+                        except TimeoutException as e:
+                                print("[{}] Element not clickable".format(str(datetime.now())))                    
+                        #time.sleep(wait_time12)
+                        wait_time35 = random.randint(3,5)
+                        time.sleep(wait_time35)
+
+                        matches_pg_url = mls_btn.get_attribute('href')
+                        driver.get(matches_pg_url)
+
+                        #mls_btn.click()
+                        #time.sleep(wait_time12)
+                        # #sports_list = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item')
+                                                
+                        #//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[3]
+                        # time.sleep(wait_time37)
+
+                        #time.sleep(wait_time12)
+
+                        # except:
+                            
+                        #     any_errors = False
+                        #     print("Error  caught in your pmu sports parse func. block ..... :( ")
+
+                        sports_list = driver.find_elements_by_xpath('//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]/div/div[2]/div')
+                                    
+                        games_list = sports_list
+                        if games_list:
+
+                            for match in games_list:
+                                
+                                # default is pre game - i.e an eptyy livetag to prepend the dictionry key
+                                live_tag = ''
+
+                                time.sleep(wait_time12)
+                                game_info = match.text.split('\n')
+                                if len(game_info) >= 2:
+                                    date = unidecode.unidecode(game_info[1]) #.split('\n')[0])
+                                #for games in game_info:
+
+                                if '2nd half' in game_info[1].lower() or '1st half' in game_info[1].lower():
+                                    print('LIVE GAME ENCOUNTERED !')
+                                    live_tag = 'Live_'
+                                    # skip to next game fow , but in future sort apart live and pre game matches.
+                                    continue
+                                
+                                #matches = games.split('//')            
+                                if len(game_info) >= 5 :
+                                    time.sleep(wait_time12)
+                                    #for match in matches :
+                                    # game_info  = matches[0].split('\n')
+                                    # single_game_right = matches[1].split('\n')
+
+                                    # if len(game_info) < 1 or len(single_game_right) < 4:
+                                    #     breaks
+                                    
+                                    #time.sleep(wait_time12)
+                                    try:
+                                        teamA = unidecode.unidecode(game_info[2]).lower().strip()
+                                        teamB = unidecode.unidecode(game_info[-2]).lower().strip()
+                                    except KeyError:
+                                        print('key error in draft kings in float casting odds...')    
+                                        continue                        
+                                        #time.sleep(wait_time12)
+                                    try:
+                                        # attempt assuming euro dds format
+                                        #teamAWinOdds = float(game_info[-5].replace(',','.'))
+                                        #draw_odds    = float(game_info[-3].replace(',','.'))
+                                        #teamBWinOdds = float(game_info[-1].replace(',','.'))
+
+                                        teamAOdds_str = game_info[-5]
+                                        drawOdds_str = game_info[-3]
+                                        teamBOdds_str = game_info[-1]                
+                                        if teamAOdds_str[0] == '+':
+                                            print(' teamAOdds_str[1:] = ' + str(teamAOdds_str[1:]))
+                                            teamAOdds = round((float(teamAOdds_str[1:])/ 100.0),4) + 1.0
+                                        else:
+                                            teamAOdds = round((100.0/(float(teamAOdds_str[1:]))),4) + 1.0   
+                                        if drawOdds_str[0] == '+':    
+                                            draw_odds = round((float(drawOdds_str[1:]) / 100.0),4) + 1.0
+                                        else:   
+                                            draw_odds = round(( 100.0/(float(drawOdds_str[1:]))),4) + 1.0             
+                                        if teamBOdds_str[0] == '+':
+                                            teamBOdds = round((float(teamBOdds_str[1:])/ 100.0),4) + 1.0
+                                        else:
+
+                                            teamBOdds = round(( 100.0/(float(teamBOdds_str[1:]))),4) + 1.0                   
+
+                                    except ValueError:
+                                        print('value error in draft kings in float casting odds...')    
+                                        continue
+
+                                    print('teamA Win Odds = ' + str(teamAOdds))
+                                    print('teamB Win Odds = ' + str(draw_odds))
+                                    print('Draw Odds = ' + str(teamBOdds))
+
+                                    #time.sleep(wait_time12)
+                                    teams = teamA + ' - ' + teamB                                            
+                                    full_all_bookies_allLeagues_match_data[ 'draftkings' + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(teamAOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                    full_all_bookies_allLeagues_match_data[ 'draftkings' + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(draw_odds)
+                                    full_all_bookies_allLeagues_match_data[ 'draftkings' + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(teamBOdds)
+
+                    web_pg_soccer = ""
+                    if 'betmgm' in sites:
+                        time.sleep(wait_time12)
+                        driver.get(sites)
+
+                        # <ms-widget-slot msautomation="widget-slot-left" class="cg32t435ol-3 widget-slot ng-star-inserted"><ms-favourites-widget class="hidden favourites-widget list list-card ng-star-inserted"><!----><!----></ms-favourites-widget><ms-top-items-widget class="list list-card top-items-widget ng-star-inserted"><ms-item class="list-title list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted"><div class="icon ng-star-inserted"><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Top Sports</span><!----></div><!----><!----><!----></a><!----><!----><!----></ms-item><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/football-11"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-11"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Football</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/mma-45"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-45"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">MMA</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/boxing-24"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-24"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Boxing</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/formula-1-6?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-6"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Formula 1</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/table-tennis-56"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-56"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Table Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/nascar-39?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-39"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">NASCAR</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/basketball-7"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-7"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Basketball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/baseball-23"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-23"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Baseball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/hockey-12"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-12"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Hockey</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/golf-13?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-13"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Golf</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><div class="separator-item ng-star-inserted">A-Z SPORTS</div><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/aussie-rules-36?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-36"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Aussie Rules</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/baseball-23"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-23"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Baseball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/basketball-7"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-7"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Basketball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/boxing-24"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-24"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Boxing</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/cricket-22"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-22"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Cricket</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/curling-68"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-68"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Curling</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/cycling-10?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-10"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Cycling</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/darts-34"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-34"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Darts</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/football-11"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-11"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Football</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/formula-1-6?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-6"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Formula 1</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/gaelic-sports-48?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-48"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Gaelic Sports</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/golf-13?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-13"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Golf</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/handball-16"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-16"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Handball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/hockey-12"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-12"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Hockey</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/lacrosse-88"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-88"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Lacrosse</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/mma-45"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-45"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">MMA</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/motorsport-41?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-41"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Motorsport</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/nascar-39?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-39"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">NASCAR</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/rugby-league-31"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-31"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Rugby League</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/rugby-union-32"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-32"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Rugby Union</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/snooker-33"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-33"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Snooker</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/soccer-4"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-4"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Soccer</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/table-tennis-56"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-56"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Table Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/tennis-5"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-5"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/volleyball-18"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-18"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Volleyball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></ms-top-items-widget><!----></ms-widget-slot>
+                        # <vn=-098765ynamic-layout-multi-slot slot="header_bottom_items" class="slot slot-single slot-header_bottom_items"><ms-breadcrumbs class="breadcrumb hidden"><div class="breadcrumb-back"><span class="breadcrumb-theme-left"><i class="theme-left"></i></span></div><!----><!----><!----></ms-breadcrumbs><!----><!----><ms-navigation><div class="navigation-wrapper"><nav id="sports-nav" class="compact"><ms-main-items><ms-scroll-adapter class="scroll-adapter" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><div class="scroll-adapter__container scroll-adapter__container--scrollable-right" style="overflow-x: hidden;"><div class="scroll-adapter__content"><div class="main-items"><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/live/betting"><i class="ui-icon ui-icon-size-lg sports-icon theme-live"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Live</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="https://casino.on.betmgm.ca/en/games"><i class="ui-icon ui-icon-size-lg sports-icon theme-livecasinoblackjack"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Casino</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/basketball-7/betting/usa-9/nba-6004"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-nba"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NBA</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/hockey-12/betting/usa-9/nhl-34"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-nhl"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NHL</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/baseball-23/betting/usa-9/mlb-75"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-mlb"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">MLB</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/golf-13/betting/world-6/us-masters-11144?tab=matches"><i class="ui-icon ui-icon-size-lg sports-icon sports-13"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">The Masters</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/soccer-4"><i class="ui-icon ui-icon-size-lg sports-icon sports-4"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Soccer</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/mma-45/betting/usa-9/ufc-273-75854"><i class="ui-icon ui-icon-size-lg sports-icon sports-45"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">UFC 273</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/tennis-5"><i class="ui-icon ui-icon-size-lg sports-icon sports-5"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Tennis</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/multi-builder"><i class="ui-icon ui-icon-size-lg sports-icon theme-multi-builder"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Easy Parlay</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="before-separator menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/football-11"><i class="ui-icon ui-icon-size-lg sports-icon sports-11"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Football</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/mma-45"><i class="ui-icon ui-icon-size-lg sports-icon sports-45"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">MMA</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/boxing-24"><i class="ui-icon ui-icon-size-lg sports-icon sports-24"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Boxing</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/formula-1-6?fallback=true"><i class="ui-icon ui-icon-size-lg sports-icon sports-6"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Formula 1</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/table-tennis-56"><i class="ui-icon ui-icon-size-lg sports-icon sports-56"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Table Tennis</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/nascar-39?fallback=true"><i class="ui-icon ui-icon-size-lg sports-icon sports-39"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NASCAR</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/basketball-7"><i class="ui-icon ui-icon-size-lg sports-icon sports-7"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Basketball</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/favourites"><i class="ui-icon ui-icon-size-lg sports-icon sports-favourites"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Favorites</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="https://promo.on.betmgm.ca/en/promo/offers"><i class="ui-icon ui-icon-size-lg sports-icon theme-offers"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Promotions</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="before-separator menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href=""><i class="ui-icon ui-icon-size-lg sports-icon theme-search before-separator"><span vnmenuitembadge="" class="badge badge-circle badge-offset badge-size-sm badge-t-r topnav-new-badge">New</span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Search </span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><!----></div><!----></div></div><span class="scroll-adapter__arrow scroll-adapter__arrow--left scroll-adapter__arrow--hidden scroll-adapter__arrow--disabled"><span class="theme-left"></span></span><span class="scroll-adapter__arrow scroll-adapter__arrow--right"><span class="theme-right"></span></span></ms-scroll-adapter><!----><!----><!----></ms-main-items></nav></div><!----><div class="az-menu-container"></div></ms-navigation><!----><!----><ms-sub-navigation><!----><!----></ms-sub-navigation><!----><!----><!----></vn-dynamic-layout-multi-slot>
+
+                        wait_time35 = random.randint(3,5)
+                        time.sleep(wait_time35)                        
+
+                        try:
+                            #test_wrongPg_mls_btn = WebDriverWait(driver, 7).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Game Lines')))
+                            # mls_btn = WebDriverWait(driver, 7).until(EC.element_to_be_visible((By.LINK_TEXT, 'USA - MLS')))
+                            mls_btn = driver.find_element_by_link_text('Soccer')
+                        except TimeoutException as e:
+                                print("[{}] Element not clickable".format(str(datetime.now())))   
+
+                        time.sleep(wait_time35)
+                        time.sleep(wait_time35)
+
+                        matches_pg_url = mls_btn.get_attribute('href')
+
+                    ############################
+                        driver.quit()
+                        proxies = req_proxy.get_proxy_list()
+                        PROXY_COUNTER = random.randint(1, len(proxies))
+
+                        PROXY = proxies[PROXY_COUNTER].get_address()
+                        webdriver.DesiredCapabilities.CHROME['proxy']={
+                            "httpProxy":PROXY,
+                            "ftpProxy":PROXY,
+                            "sslProxy":PROXY,
+                            "proxyType":"MANUAL",
+                        }
+                        driver_1 = webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
+                        driver_1.maximize_window()
+                            
+                        time.sleep(wait_time12)
+                        time.sleep(wait_time12)
+
+                        driver_1.get(matches_pg_url) 
+                        randFloatNUm5_7 = random.SystemRandom().uniform(5, 7)
+                        time.sleep(randFloatNUm5_7)
+
+                        # if len(driver.window_handles) > 0 :
+                        #     window_after = driver.window_handles[-1]
+                        #     driver.switch_to.window(window_after)
+
+#driver.refresh()
+                        time.sleep(wait_time12)
+                        try:
+                            usa_btn = driver_1.find_element_by_partial_link_text('USA')
+                        except TimeoutException as e:
+                                print("[{}] Element not clickable".format(str(datetime.now())))   
+
+                        #usa_btn = WebDriverWait(driver_1, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, 'USA')))
+                        time.sleep(wait_time12)
+                        matches_pg_url_usa = usa_btn.get_attribute('href')
+
+                        driver_1.quit()
+                        PROXY = proxies[PROXY_COUNTER].get_address()
+                        webdriver.DesiredCapabilities.CHROME['proxy']={
+                        "httpProxy":PROXY,
+                        "ftpProxy":PROXY,
+                        "sslProxy":PROXY,
+                        "proxyType":"MANUAL",
+                        }
+                        driver_2 = webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
+                        driver_2.maximize_window()
+                        time.sleep(wait_time35)
+                        time.sleep(wait_time12)
+                        time.sleep(wait_time35)
+                        driver_2.get(matches_pg_url_usa)
+
+                        try:
+                            # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
+                            # sports_list = driver.find_element_by_xpath('//*[@class="col-3 widget-slot ng-star-inserted"]')   #"slot slot-single slot-header_bottom_items")
+                            # #'leaf-item list-item ng-star-inserted'
+                            # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
+
+                            sports_list = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item')
+                            #//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[3]
+
+                        except:
+                            
+                            any_errors = False
+                            print("Error  caught in your BetMGM parse func. block ..... :( ")
+                            #continue 
+
+                        # if sports_list:    
+
+                        #     for index, sports in enumerate(sports_list):
+
+                        #         if 'soccer' in sports.text.lower():
+                        #             #time.sleep(wait_time12)
+                        #             element_str = '//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[' + str(index + 1) + ']/a'
+                        #             #print('formed string = ->' + element_str + '<-')
+                        #             #enter_next_page = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, element_str)))
+                        #             web_pg_soccer
+                        #             web_pg_soccer = enter_next_page.get_attribute('href')
+                        #             time.sleep(wait_time12)
+                        #             driver.get(web_pg_soccer)
+                        #             time.sleep(3)
+                        #             #click_element =  g
+                        #             #enter_next_page.click()
+                        #             break
+
+                        #     time.sleep(wait_time12)
+                        # time.sleep(wait_time12)
+
+                        # driver.implicitly_wait(7)
+
+                        # try:
+                        #     outer_sports_picker_elemt_1 = driver.find_element_by_xpath("//*[contains(@class, 'row sport-lobby widget-layout ng-star-inserted')]")
+                        # except:
+                        #     any_errors = False
+                        #     print("Error  caught in your BetMGM parse func. block ..... :( ")
+                        #     #continue 
+
+                        # check_alls_well  = 1    
+                        # proxies = req_proxy.get_proxy_list()
+                        # ## TEST
+                        # proxies = proxies[:51]
+                        # PROXY_COUNTER = random.randint(1, len(proxies))
+                        # proxies = req_proxy.get_proxy_list()
+
+                        # if PROXY_COUNTER == len(proxies) - 1:
+                        #     proxies = req_proxy.get_proxy_list()
+
+                        # PROXY = proxies[PROXY_COUNTER].get_address()
+                        # webdriver.DesiredCapabilities.CHROME['proxy']={
+                        #     "httpProxy":PROXY,
+                        #     "ftpProxy":PROXY,
+                        #     "sslProxy":PROXY,
+                        #     "proxyType":"MANUAL",
+                        # }
+                        # driver_1 = webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
+
+                        # PROXY_COUNTER += 1
+                        # driver_1.get(web_pg_soccer)
+
+                        #WebDriverWait(driver, 6).until(EC.presence_of_element_located((By.XPATH, '/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/ms-main/ng-scrollbar/div/div/div/div/ms-main-column/div/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[5]/a')))
+
+                        #WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[4]')))
+
+                        try:
+                            countries_soccer_list = driver_1.find_elements_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[4]')
                             time.sleep(wait_time12)
-                            sports.click()
-                else:
-                    print('missed sports_list+parent- list doesn exist...Error ...')            
+                            if countries_soccer_list:    
 
-# "//*[contains(@class,'ms-active-highlight')]
+                                for index, leagues in enumerate(countries_soccer_list):
 
-                wait_time12 = random.randint(1,2)
-                time.sleep(wait_time12)
-                try:
-                    #bunny = pg_root.find_elements_by_xpath("//*[@contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
+                                    if 'usa' in leagues.text.lower():
+                                        #time.sleep(wait_time12)
+                                        element_str = '//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[' + str(index + 1) + ']/a'
+                                        #print('formed string = ->' + element_str + '<-')
+                                        
+                                        #enter_next_page = WebDriverWait(driver_1, 3).until(EC.element_to_be_clickable((By.XPATH, element_str)))
+                                        enter_next_page = driver.find_elemnt_by_xpath(element_str)
+                                        time.sleep(wait_time12)
+                                        web_pg_mls = enter_next_page.get_attribute('href')
+                                        # wait_time23 = random.randint(2,3)
+                                        #time.sleep(wait_time23)
+                                        driver.get(web_pg_mls)
+                                        
+                                        btn = driver.find_element_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[' + str(index + 1) + ']')
+                                        btn.click()
 
-                    socer_leagues_global = driver.find_elements_by_xpath("//*[contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
-                except NoSuchElementException:
-                    any_errors = False
-                    print("Error  caught in your pmu sports parse func. block ..... :( ")
-                    #continue 
+                                        #click_element = 
+                                        #enter_next_page.click()
+                                        break
 
-                except StaleElementReferenceException:
-                    print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-                    continue 
+                                time.sleep(wait_time12)
 
-                time.sleep(wait_time12)
-                if socer_leagues_global:
-                    for league_names in socer_leagues_global:
-                        league = league_names.text.lower()
-                        #if 'MLS' in league:
-                        # testing wuth bundesliga for now as no MLS games le fail @ time of testing :
-                        if 'mls' in league:
+                        except:
+                            any_errors = False
+                            print("Error  caught in your v sports parse func. block ..... :( ")
+                            #continue 
+
+                        # get_afrts_href0
+
+                        #then grab games - go thru 'em and get odds'
+
+                        try:
+                            league_games_list = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item')
                             time.sleep(wait_time12)
-                            ime.sleep(wait_time12)
-                            league_names.click()
+                        except KeyError:
+                            print('value error in parion in float casting odds...')    
+                            continue                      
 
-                time.sleep(wait_time12)
-                # Now lets looop thru the games and pick up the various requested odds, finally :
+                            if league_games_list:    
+                                ligue1_games_info_pmu = resultPmuElements_1
+                            if not resultPmuElements_1:
+                                ligue1_games_info_pmu = resultPmuElements
 
-                #<div class="sportsbook-event-accordion__wrapper expanded"><div role="button" tabindex="0" aria-expanded="true" aria-label="Event Accordion for Bayern Munchen vs Augsburg" class="sportsbook-event-accordion__accordion" data-tracking="{&quot;target&quot;:&quot;ExpandEvent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;section&quot;:&quot;GamesComponent&quot;,&quot;sport&quot;:5312,&quot;league&quot;:88670568,&quot;value&quot;:&quot;Bayern Munchen vs Augsburg&quot;}"><a class="sportsbook-event-accordion__title" href="/event/180267546">Bayern Munchen vs Augsburg</a><span class="sportsbook-event-accordion__date"><span>SAT 9th APR 9:30AM</span></span><svg role="img" aria-label="Arrow pointing up icon" class="sportsbook__icon--arrow-up" fill="#ababab" width="12" height="12" viewBox="0 0 32 32"><path d="M16.032 6.144h-0.032l-14.624 14.656c-0.384 0.384-0.384 0.992 0 1.344l1.504 1.504c0.384 0.384 0.992 0.384 1.344 0l11.776-11.776h0.032l11.776 11.776c0.384 0.384 0.992 0.384 1.344 0l1.504-1.504c0.384-0.384 0.384-0.992 0-1.344l-14.624-14.656z"></path></svg></div><div class="sportsbook-event-accordion__children-wrapper"><ul class="game-props-card17"><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Bayern Munchen " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Bayern Munchen</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">-1000</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Draw " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Draw</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+900</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Augsburg " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Augsburg</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+2200</span></div></div></div></div></div></li></ul></div></div>
+                            if not  ligue1_games_info_pmu:
+                                continue   
+                            
+                            #//*[@id="tabs-second_center-block-0"]/div/div/div/div/div/div/div/div
+                            #//*[@id="table-content-20201220_0_2"]/div/div[2]
+                            #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
+                            #end = timeit.time
+                            #print('Time taken to scrape unibets champ league shit was = ' + str(end - start)) 
+                            game_info = ligue1_games_info_pmu[0].text.split('+')
+                            date = unidecode.unidecode(game_info[0].split('\n')[0])
+                            for games in game_info:
+                                #all_games =  games.find_elements_by_xpath('//ms-event')
+                                #time.sleep(wait_time12)
+                                    #[0].split('\n')
+                                #for game in game_info:
 
-                socer_matches_forMLS = league_names.find_element_by_xpath('//*[@class="sportsbook-event-accordion__wrapper expanded"]')
+                                pmu_loop_counter += 1
+                                if pmu_loop_counter > 20 :
+                                    print('breaking out of crazy pmu loop.. ! as it goes on ad infinitum, lool')
+                                    break
+                            
+                                matches = games.split('//')    
+                                if len(matches) >= 2 :
+                                    time.sleep(wait_time12)
+                                    #for match in matches :
+                                    single_game_left  = matches[0].split('\n')
+                                    single_game_right = matches[1].split('\n')
 
-                #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__body > div.sportsbook-responsive-card-container__card.selected > div > div.cards > div:nth-child(1) > div > div
+                                    if len(single_game_left) < 1 or len(single_game_right) < 4:
+                                        break
+                                    
+                                    #time.sleep(wait_time12)
+                                    try:
+                                        teamA = team_names_maping[unidecode.unidecode(single_game_left[-1]).lower().strip()]
+                                        teamB = team_names_maping[unidecode.unidecode(single_game_right[0]).lower().strip()]
+                                    except KeyError:
+                                        print('value error in BetMGM in float casting odds...')    
+                                        continue                        
+                                        #time.sleep(wait_time12)
+                                    try:
+                                        teamAWinOdds = float(single_game_right[1].replace(',','.'))
+                                        draw_odds    = float(single_game_right[2].replace(',','.'))
+                                        teamBWinOdds = float(single_game_right[3].replace(',','.'))
 
-                'ReactVirtualized__'
+                                    except ValueError:
+                                        print('value error in BetMGM in float casting odds...')    
+                                        continue
 
-                check = 0
+                                    #time.sleep(wait_time12)
+                                    teams = teamA + ' - ' + teamB
+                                    init_index_pmu_name = 8
+                                    end_index_pmu_name = 26                                               
+                                    full_all_bookies_allLeagues_match_data[ 'BetMGM'.lower() + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(teamAWinOdds) #= teamAWinOdds + '_' + draw_odds + '_' + teamBWinOdds
+                                    full_all_bookies_allLeagues_match_data[ 'BetMGM'.lower() + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(draw_odds)
+                                    full_all_bookies_allLeagues_match_data[ 'BetMGM'.lower() + '_' + date.lower() + '_' + league_or_cup_name.lower() + '_' + teams].append(teamBWinOdds)
 
 
     stop_mainParserTimer = time.time()
@@ -2499,6 +2516,32 @@ if __name__ == '__main__':
     argv = sys.argv
     DEBUG_OUTPUT  = False
     print(' len(argv)  = ' + str(len(argv) ))
+
+    print('Enter list of sports and compettitions you want alerts for ... \n')
+    print('Use format :   soccer, mls, serie A; basketball, MBA; tennis, wimbledon, US Open. ')
+  
+    input_stream = input()
+    sports_n_competetitons_list = input_stream.split(';')
+
+    if not sports_n_competetitons_list : # or other issues like no recognized or supprted sports then choose default (soccer and MLS only)
+        sports_n_competetitons_list = ['soccer, MLS']
+        #         sports_n_competetitons['soccer'] = ['MLS']
+    else:
+        if sports_n_competetitons_list[-1] == '':
+            sports_n_competetitons_list = sports_n_competetitons_list[:-1]
+        for item in sports_n_competetitons_list:
+            if len(item) >= 2:
+                competetes_per_sport_list = item.split(',')#[1:]
+                for index, competetition in enumerate(competetes_per_sport_list[1:]):
+                    #if (index+1) <= len(competetes_per_sport_list[1:]):
+                        sports_n_competetitons[competetes_per_sport_list[0]].append(competetition.strip())   # competetes_per_sport_list[index+1])
+            else:
+                sports_n_competetitons['soccer'] = ['MLS']
+
+## temporarily use these instead of dict aboove until it is worling and reliable
+    
+    sports_btn_val = 'soccer' # 'hockey' 'basketball' 'nfl'  'curling'
+    compettition_btn_val    =  'MLS'
     
     #schtake = 1000
     #retval2 = check_for_sure_bets(float(schtake)) #argv[1]))
@@ -2524,22 +2567,22 @@ if __name__ == '__main__':
 
         if len(argv) == 8 :
 
-            retVal = odds_alert_system(oddType= int(argv[1]), expect_oddValue= float(argv[2]), teamA= argv[3], teamB= argv[4], date= argv[5], competition= argv[6], Bookie1_used= argv[7])
+            retVal = odds_alert_system(oddType= int(argv[1]), expect_oddValue= float(argv[2]), teamA= argv[3], teamB= argv[4], date= argv[5], competition= argv[6], Bookie1_used= argv[7], input_sports= [sports_btn_val], input_competitions = [compettition_btn_val])
 
         elif  len(argv) == 2 :
 
-            retval2 = check_for_sure_bets(float(argv[1])) 
+            retval2 = check_for_sure_bets(float(argv[1]), sports_n_competetitons) 
 
         else:
 
             #print("usage:  please indicate with  0 or a 1 in the first cmd line argument to the program wherether you wish to include debugging output prints in it's run or not; 0/1 corresponding to no/yes....")
-            print("Usage : sportsbetAlertor_v1.py oddType (0 -home team win, 1 - a dra. 2 - away team win ) expect_oddValue teamA teamB competition Bookie1_used.    i.e 7 parameters on thye cmd line after the filename")
+            print("Usage : sportsbetAlertor_v1.py oddType (0 -home team win, 1 - a dra. 2 - away team win ) expect_soddValue teamA teamB competition Bookie1_used.    i.e 7 parameters on thye cmd line after the filename")
             print("Heres an Example --- sportsbetAlertor_v1.py  0 1.75  lyon  marseille  ligue1 Winamax")
             exit(1)
    
-    else:    
+    else:
         #DEBUG_OUTPUT = bool(int(argv[1]))
-        retval2 = check_for_sure_bets() #'unibet','zebet','winimaxc','W', 'D','marseilles','nantes','28/11/2020','ligue 1 UberEats')
+        retval2 = check_for_sure_bets(input_sports= [sports_btn_val], input_competitions = [compettition_btn_val])   #sports_n_competetitons) #'unibet','zebet','winimaxc','W', 'D','marseilles','nantes','28/11/2020','ligue 1 UberEats')
 
 
 
