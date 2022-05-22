@@ -75,7 +75,6 @@ all3ligaPremFrmc_april18.log
 amazon-ses-mycrowledj-sample.py
 ance_pari_LiveLigue1WebpageData.html
 ance_pari_LiveLigue1WebpageData_files/
-aws_instance4cpus/
 aws_sportBet_auto_set_up.sh
 Betclic_LiveLigue1WebpageData.html
 Betclic_LiveLigue1WebpageData_files/
@@ -167,3 +166,7 @@ Zebet_LiveLigue1WebpageData.html
 Zebet_LiveLigue1WebpageData_files/
 zebetfootballChampsLeague-Pariersurfootball.html
 zebetfootballChampsLeague-Pariersurfootball_files/
+*.png
+*.download
+*.log
+*.jpg

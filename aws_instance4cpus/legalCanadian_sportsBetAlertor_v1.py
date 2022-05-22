@@ -1562,10 +1562,7 @@ def parseSites(driver, input_sports, input_competitions ):
                             any_errors = False
                             print("Error  ->  caught in your UNIBET parse func. block call --  :( ..... ")
                             continue
-                        #check = 1
 
-                    #full path copied from sourcecode tool       
-                    #/html/body/div[3]/div/div/section/div/div[1]/div/span/div/div[2]/div/section/div/div[1]/div/div/div[2]
                     start_winimax = time.time()
                     if winimax in sites :        
                         print('in winimax ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')   
@@ -1586,10 +1583,6 @@ def parseSites(driver, input_sports, input_competitions ):
                         # TEST _ CHANGE Loop var to the live one here temporarily
                         for matches in ligue1_games_nested_gamesinfo_winimax: #ligue1_games_nested_gamesinfo_winimax_live_footy:  # ligue1_games_nested_gamesinfo_winimax:                 #//*[@id="app-inner"]/span/div/div[2]/div/section/div/div[1]/div/div
                             if matches.rect['height'] < 50.0:
-                                #check if you get a non match day like - alternative betting type header
-                                # (occues at the end of the ligue one games list on winimax pro ejemplo0)
-                                # if not (any(char.isdigit() for char in matches.text)):
-                                #    continue
                                 if find_substring("BETS ON THE ", matches.text):
                                     break
                                 date = unidecode.unidecode(matches.text)   
@@ -1652,9 +1645,6 @@ def parseSites(driver, input_sports, input_competitions ):
                         print('time taken to process winimax was = ' + str(end_winimax - start_winimax))
 
             ## TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!    
-                    
-                    ## somethin wrong with assumed html in link - think i must navigate all the way from base url with button click and hfers links etc
-
                     start_cbet = time.time()  
                     cbet_win_odds_indx  = 4
                     cbet_draw_odds_indx = 5
@@ -1662,12 +1652,9 @@ def parseSites(driver, input_sports, input_competitions ):
                     #print('time taken to process unibet was = ' + str(start_unibet - end_unibet))
                     if cbet in sites :        
                         time.sleep(wait_time12)
-                        #time.sleep(wait_time12)     
-                        #time.sleep(wait_time12) 
-                        #driver.implicitly_wait(13)
-                        print('in cbet ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')   
-                        #compettition  =  compettition_ #split_match_data_str[1]    
-                        
+
+                        print('in cbet ' +   league_or_cup_name  + ' pre-match parsing .... \n \n')
+                    
                         try:
                             #WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH,'/html/body/div[1]/div/div[2]/div[1]/div/section/section/ul/li')))
                             ligue1_games_nested_gamesinfo_cbet = driver.find_elements_by_xpath('//*[@id="prematch-events"]/div[1]/div/section/section/ul/li')    
@@ -1706,8 +1693,6 @@ def parseSites(driver, input_sports, input_competitions ):
                     #TODO !!!!        frech_ligue_gamesinfo_list = driver.find_elements_by_xpath('???? ')
 
                         date = '20 decembre' #unidecode.unidecode('?? ') 
-                        #time.sleep(wait_time12)
-                        #time.sleep(wait_time12)
 
                         wait_time37 = random.randint(3,6)
                         #print('second rand wait time = ' + str(wait_time37))
@@ -1800,12 +1785,7 @@ def parseSites(driver, input_sports, input_competitions ):
                         end_cbet = time.time()  
                         tot_cbet +=  end_cbet - start_cbet
                         print('time taken to process cbet was = ' + str(start_cbet - end_cbet))
-                        # url = sites
-                        # headers = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.111 Safari/537.36'}
-                        # res = requests.get(url=url, headers=headers).json()
-                        # print(res)
-                        # for i in res['data']: #['list']:
-                        #     print(i)                
+  
 
             # Hiddemn Div here needs fixing:
             # TODO - games element not getting picked up by find_elements driver call - try somtin else or beuaty soup!
@@ -1818,10 +1798,6 @@ def parseSites(driver, input_sports, input_competitions ):
                         #try:
                         time.sleep(wait_time12) 
                         # relative path to all upcoming ligue 1 games    
-                        #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group")
-                        #resultElements_all_dates = driver.find_elements_by_xpath("/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event")                
-                                                                                    #"/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group"    
-                                                                                    #/html/body/vn-app/vn-dynamic-layout-single-slot[3]/vn-main/main/div/ms-main/div/div/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event[1]   
                         resultElements_all_dates = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-fixture-list/div/div/div/ms-grid/ms-event-group/ms-event')
 
                         #     # now navigate using the driver and xpathFind to get to the matches section of Ref. site :
@@ -1886,136 +1862,9 @@ def parseSites(driver, input_sports, input_competitions ):
                     parion_draw_odds_indx = 4
                     parion_lose_odds_indx = 5
      
+
                     if 'draftkings' in sites :
 
-                    #     joon = driver.find_elements_by_xpath('/html/body/div[1]/div/div[3]/div[3]/div/div/div/div[1]/div/div/div[2]/div/div[1]/div/div[2]/div[2]/div/div')
-                    #     for games in joon :
-
-                    ## Choose upcoming (not live) games
-
-                    #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__header.sportsbook-custom-scrollbar-darkest
-
-        #                 pg_root_0 = driver.find_element_by_id('root')
-        #                 try:
-        #                     pg_root = pg_root_0.find_element_by_class_name("sportsbook-responsive-card-container") #__header.sportsbook-custom-scrollbar-darkest")
-
-        #                     #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__header.sportsbook-custom-scrollbar-darkest
-
-        #                 except NoSuchElementException:
-        #                     any_errors = False
-        #                     print("Error  caught in your draftkings sports parse func. block ..... :( ")
-        #                     #continue
-        #                 except StaleElementReferenceException:
-        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-        #                     continue         
-                        
-        #                 ## get to clicking soccer
-        #                 try:
-
-        #                     event_types = pg_root.find_element_by_id("game_category_Game Lines") 
-        #                     # event_types_full_txt = pg_root.text
-        #                     # event_types = event_types_full_txt.split('\n')
-
-        #                     #in_game_btn = event_types.find_element_by_xpath("./../")
-
-        #                     # for event_type in event_types:
-        
-        #                     #     # event = event_type.get_id()
-
-        #                     #     if 'game lines' in event_type.lower():
-        #                     #         time.sleep(wait_time12)
-                            
-        #                     event_types.click()
-
-        #                     #pg_root = pg_roots.find_element_by_class_name('sportsbook-featured-page dkbetslip')
-
-        #                 except NoSuchElementException:
-        #                     any_errors = False
-        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
-        #                     #continue 
-
-        #                 except StaleElementReferenceException:
-        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-        #                     continue 
-
-        #                 try:    
-        #                     time.sleep(wait_time12)
-        #                     #event_types_parent = event_types.parent # find_element_by_class_name('//../')
-        #                     sports_list_parent = pg_root_0.find_elements_by_class_name("sportsbook-tabbed-subheader")
-        #                     #sports_list_parent = pg_root.find_element_by_class_name("sportsbook-featured__featured-offers")
-        #                     time.sleep(wait_time12)
-        #                     #sports_list = sports_list_parent.find_element_by_class_name("sportsbook-responsive-card-container__header sportsbook-custom-scrollbar-darkest")
-
-        #                 except NoSuchElementException:
-        #                     any_errors = False
-        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
-        #                     #continue 
-
-        #                 except StaleElementReferenceException:
-        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-        #                     continue 
-
-        #                 time.sleep(wait_time12)
-        #                 # games = sports_list.find_elements_by_css_selector('a')
-        #                 if sports_list_parent:
-        #                     games = sports_list_parent[-1].find_elements_by_css_selector('a')
-                        
-        #                     time.sleep(wait_time12)
-        #                     for sports in games:
-
-        #                         sport = sports.text.lower()
-        #                         if 'soccer' in sport:
-        #                             time.sleep(wait_time12)
-        #                             sports.click()
-        #                 else:
-        #                     print('missed sports_list+parent- list doesn exist...Error ...')            
-
-        # # "//*[contains(@class,'ms-active-highlight')]
-
-        #                 wait_time12 = random.randint(1,2)
-        #                 time.sleep(wait_time12)
-        #                 try:
-        #                     #bunny = pg_root.find_elements_by_xpath("//*[@contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
-        #                     socer_leagues_global = driver.find_elements_by_xpath("//*[contains(@class, 'ReactVirtualized__Grid__innerScrollContainer')]")
-
-        #                 except NoSuchElementException:
-        #                     any_errors = False
-        #                     print("Error  caught in your pmu sports parse func. block ..... :( ")
-        #                     #continue 
-
-        #                 except StaleElementReferenceException:
-        #                     print('StaleElementReferenceException exception  error in parion in float casting odds...')    
-        #                     continue 
-
-        #                 time.sleep(wait_time12)
-        #                 if socer_leagues_global:
-        #                     for league_names in socer_leagues_global:
-        #                         league = league_names.text.lower()
-        #                         #if 'MLS' in league:
-        #                         # testing wuth bundesliga for now as no MLS games le fail @ time of testing :
-        #                         if 'mls' in league:
-        #                             time.sleep(wait_time12)
-        #                             time.sleep(wait_time12)
-        #                             league_names.click()
-
-        #                 time.sleep(wait_time12)
-        #                 # Now lets looop thru the games and pick up the various requested odds, finally :
-
-        #                 #<div class="sportsbook-event-accordion__wrapper expanded"><div role="button" tabindex="0" aria-expanded="true" aria-label="Event Accordion for Bayern Munchen vs Augsburg" class="sportsbook-event-accordion__accordion" data-tracking="{&quot;target&quot;:&quot;ExpandEvent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;section&quot;:&quot;GamesComponent&quot;,&quot;sport&quot;:5312,&quot;league&quot;:88670568,&quot;value&quot;:&quot;Bayern Munchen vs Augsburg&quot;}"><a class="sportsbook-event-accordion__title" href="/event/180267546">Bayern Munchen vs Augsburg</a><span class="sportsbook-event-accordion__date"><span>SAT 9th APR 9:30AM</span></span><svg role="img" aria-label="Arrow pointing up icon" class="sportsbook__icon--arrow-up" fill="#ababab" width="12" height="12" viewBox="0 0 32 32"><path d="M16.032 6.144h-0.032l-14.624 14.656c-0.384 0.384-0.384 0.992 0 1.344l1.504 1.504c0.384 0.384 0.992 0.384 1.344 0l11.776-11.776h0.032l11.776 11.776c0.384 0.384 0.992 0.384 1.344 0l1.504-1.504c0.384-0.384 0.384-0.992 0-1.344l-14.624-14.656z"></path></svg></div><div class="sportsbook-event-accordion__children-wrapper"><ul class="game-props-card17"><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Bayern Munchen " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Bayern Munchen</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">-1000</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Draw " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Draw</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+900</span></div></div></div></div></div></li><li class="game-props-card17__cell"><div class="sportsbook-outcome-cell"><div role="button" tabindex="0" aria-pressed="false" class="sportsbook-outcome-cell__body" aria-label="Augsburg " data-tracking="{&quot;section&quot;:&quot;GamesComponent&quot;,&quot;action&quot;:&quot;click&quot;,&quot;target&quot;:&quot;RemoveBet&quot;,&quot;sportName&quot;:&quot;5312&quot;,&quot;leagueName&quot;:&quot;88670568&quot;,&quot;subcategoryId&quot;:4514,&quot;eventId&quot;:180267546}"><div class="sportsbook-outcome-body-wrapper"><div class="sportsbook-outcome-cell__label-line-container"><span class="sportsbook-outcome-cell__label">Augsburg</span></div><div class="sportsbook-outcome-cell__elements"><div class="sportsbook-outcome-cell__element"></div><div class="sportsbook-outcome-cell__element"><span class="sportsbook-odds american default-color">+2200</span></div></div></div></div></div></li></ul></div></div>
-
-        #                 socer_matches_forMLS = league_names.find_element_by_xpath('//*[@class="sportsbook-event-accordion__wrapper expanded"]')
-
-        #                 #root > section > section.sportsbook-wrapper__body > div.sportsbook-featured-page.dkbetslip > section.sportsbook-featured-page__wrapper > section.sportsbook-featured-page__offers > div > div.sportsbook-responsive-card-container__body > div.sportsbook-responsive-card-container__card.selected > div > div.cards > div:nth-child(1) > div > div
-        #                 # 'ReactVirtualized__'
-        #                 check = 0
-
-
-                        #try:
-                        # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
-                        # sports_list = driver.find_element_by_xpath('//*[@class="col-3 widget-slot ng-star-inserted"]')   #"slot slot-single slot-header_bottom_items")
-                        # #'leaf-item list-item ng-star-inserted'
-                        # sports_list = driver.find_element_by_class_name("col-3 widget-slot ng-star-inserted")
-                        # driver.get('https://sportsbook.draftkings.com/leagues/soccer/88670597')
                         time.sleep(wait_time12)
                         time.sleep(wait_time12)
 
@@ -2056,19 +1905,6 @@ def parseSites(driver, input_sports, input_competitions ):
                         matches_pg_url = mls_btn.get_attribute('href')
                         driver.get(matches_pg_url)
 
-                        #mls_btn.click()
-                        #time.sleep(wait_time12)
-                        # #sports_list = driver.find_elements_by_xpath('//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item')
-                                                
-                        #//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[3]
-                        # time.sleep(wait_time37)
-
-                        #time.sleep(wait_time12)
-
-                        # except:
-                            
-                        #     any_errors = False
-                        #     print("Error  caught in your pmu sports parse func. block ..... :( ")
 
                         sports_list = driver.find_elements_by_xpath('//*[@id="root"]/section/section[2]/section/div[3]/div/div[3]/div/div/div[2]/div/div[2]/div')
                                     
@@ -2095,14 +1931,7 @@ def parseSites(driver, input_sports, input_competitions ):
                                 #matches = games.split('//')            
                                 if len(game_info) >= 5 :
                                     time.sleep(wait_time12)
-                                    #for match in matches :
-                                    # game_info  = matches[0].split('\n')
-                                    # single_game_right = matches[1].split('\n')
 
-                                    # if len(game_info) < 1 or len(single_game_right) < 4:
-                                    #     breaks
-                                    
-                                    #time.sleep(wait_time12)
                                     try:
                                         teamA = unidecode.unidecode(game_info[2]).lower().strip()
                                         teamB = unidecode.unidecode(game_info[-2]).lower().strip()
@@ -2135,7 +1964,7 @@ def parseSites(driver, input_sports, input_competitions ):
                                             teamBOdds = round(( 100.0/(float(teamBOdds_str[1:]))),4) + 1.0                   
 
                                     except ValueError:
-                                        print('value error in draft kings in float casting odds...')    
+                                        print('value error in draft kings in float casting odds...')
                                         continue
 
                                     print('teamA Win Odds = ' + str(teamAOdds))
@@ -2154,8 +1983,6 @@ def parseSites(driver, input_sports, input_competitions ):
                         driver.get(sites)
 
                         # <ms-widget-slot msautomation="widget-slot-left" class="cg32t435ol-3 widget-slot ng-star-inserted"><ms-favourites-widget class="hidden favourites-widget list list-card ng-star-inserted"><!----><!----></ms-favourites-widget><ms-top-items-widget class="list list-card top-items-widget ng-star-inserted"><ms-item class="list-title list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted"><div class="icon ng-star-inserted"><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Top Sports</span><!----></div><!----><!----><!----></a><!----><!----><!----></ms-item><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/football-11"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-11"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Football</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/mma-45"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-45"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">MMA</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/boxing-24"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-24"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Boxing</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/formula-1-6?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-6"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Formula 1</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/table-tennis-56"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-56"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Table Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/nascar-39?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-39"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">NASCAR</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/basketball-7"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-7"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Basketball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/baseball-23"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-23"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Baseball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/hockey-12"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-12"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Hockey</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/golf-13?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-13"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Golf</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><div class="separator-item ng-star-inserted">A-Z SPORTS</div><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/aussie-rules-36?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-36"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Aussie Rules</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/baseball-23"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-23"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Baseball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/basketball-7"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-7"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Basketball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/boxing-24"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-24"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Boxing</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/cricket-22"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-22"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Cricket</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/curling-68"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-68"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Curling</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/cycling-10?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-10"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Cycling</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/darts-34"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-34"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Darts</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/football-11"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-11"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Football</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/formula-1-6?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-6"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Formula 1</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/gaelic-sports-48?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-48"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Gaelic Sports</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/golf-13?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-13"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Golf</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/handball-16"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-16"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Handball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/hockey-12"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-12"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Hockey</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/lacrosse-88"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-88"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Lacrosse</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/mma-45"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-45"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">MMA</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/motorsport-41?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-41"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Motorsport</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/nascar-39?fallback=true"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-39"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">NASCAR</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/rugby-league-31"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-31"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Rugby League</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/rugby-union-32"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-32"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Rugby Union</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/snooker-33"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-33"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Snooker</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/soccer-4"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-4"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Soccer</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/table-tennis-56"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-56"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Table Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/tennis-5"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-5"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Tennis</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><ms-promo-item class="leaf-item list-item ng-star-inserted"><a class="ms-active-highlight ng-star-inserted" href="/en/sports/volleyball-18"><div class="icon ng-star-inserted"><span class="base-icon ng-star-inserted"><span class="sports-18"></span></span><!----><!----></div><div class="title ng-star-inserted"><span class="ng-star-inserted">Volleyball</span><!----><!----><!----></div><!----><!----><!----></a><!----><!----><!----></ms-promo-item><!----><!----><!----><!----><!----><!----><!----><!----><!----><!----></ms-top-items-widget><!----></ms-widget-slot>
-                        # <vn=-098765ynamic-layout-multi-slot slot="header_bottom_items" class="slot slot-single slot-header_bottom_items"><ms-breadcrumbs class="breadcrumb hidden"><div class="breadcrumb-back"><span class="breadcrumb-theme-left"><i class="theme-left"></i></span></div><!----><!----><!----></ms-breadcrumbs><!----><!----><ms-navigation><div class="navigation-wrapper"><nav id="sports-nav" class="compact"><ms-main-items><ms-scroll-adapter class="scroll-adapter" style="touch-action: pan-y; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0);"><div class="scroll-adapter__container scroll-adapter__container--scrollable-right" style="overflow-x: hidden;"><div class="scroll-adapter__content"><div class="main-items"><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/live/betting"><i class="ui-icon ui-icon-size-lg sports-icon theme-live"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Live</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="https://casino.on.betmgm.ca/en/games"><i class="ui-icon ui-icon-size-lg sports-icon theme-livecasinoblackjack"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Casino</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/basketball-7/betting/usa-9/nba-6004"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-nba"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NBA</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/hockey-12/betting/usa-9/nhl-34"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-nhl"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NHL</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/baseball-23/betting/usa-9/mlb-75"><i class="ui-icon ui-icon-size-lg sports-icon theme-custom-mlb"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">MLB</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/golf-13/betting/world-6/us-masters-11144?tab=matches"><i class="ui-icon ui-icon-size-lg sports-icon sports-13"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">The Masters</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/soccer-4"><i class="ui-icon ui-icon-size-lg sports-icon sports-4"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Soccer</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/mma-45/betting/usa-9/ufc-273-75854"><i class="ui-icon ui-icon-size-lg sports-icon sports-45"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">UFC 273</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/tennis-5"><i class="ui-icon ui-icon-size-lg sports-icon sports-5"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Tennis</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/multi-builder"><i class="ui-icon ui-icon-size-lg sports-icon theme-multi-builder"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Easy Parlay</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="before-separator menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/football-11"><i class="ui-icon ui-icon-size-lg sports-icon sports-11"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Football</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/mma-45"><i class="ui-icon ui-icon-size-lg sports-icon sports-45"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">MMA</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/boxing-24"><i class="ui-icon ui-icon-size-lg sports-icon sports-24"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Boxing</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/formula-1-6?fallback=true"><i class="ui-icon ui-icon-size-lg sports-icon sports-6"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Formula 1</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/table-tennis-56"><i class="ui-icon ui-icon-size-lg sports-icon sports-56"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Table Tennis</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/nascar-39?fallback=true"><i class="ui-icon ui-icon-size-lg sports-icon sports-39"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">NASCAR</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/basketball-7"><i class="ui-icon ui-icon-size-lg sports-icon sports-7"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Basketball</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="/en/sports/favourites"><i class="ui-icon ui-icon-size-lg sports-icon sports-favourites"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Favorites</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href="https://promo.on.betmgm.ca/en/promo/offers"><i class="ui-icon ui-icon-size-lg sports-icon theme-offers"><span vnmenuitembadge="" hidden="" class="badge badge-circle badge-danger badge-offset badge-size-sm badge-t-r"></span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Promotions</span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><vn-menu-item displaymode="icon" badgeclass="badge-size-sm badge-offset" badgeposition="icon" linkclass="top-nav-link" textclass="text-truncate ui-icon-text" class="before-separator menu-item"><a poppertrigger="none" class="menu-item-link top-nav-link" href=""><i class="ui-icon ui-icon-size-lg sports-icon theme-search before-separator"><span vnmenuitembadge="" class="badge badge-circle badge-offset badge-size-sm badge-t-r topnav-new-badge">New</span><!----><!----><!----></i><!----><!----><!----><!----><!----><!----><span class="menu-item-txt text-truncate ui-icon-text">Search </span><!----><!----><!----><!----><!----><!----><!----><!----><!----></a><!----><!----><vn-popper-content showcloselink="false" closetype="button"><popper-content class="ngxp__tooltip tooltip-info"><div class="ngxp__container ngxp__animation" aria-hidden="true" role="popper" style="display: none; opacity: 0;"><!----><div class="ngxp__inner"><span class="ui-icon ui-close theme-ex"></span><!----><div><div></div><!----></div><div class="popper-buttons"><!----></div></div><!----><div class="ngxp__arrow"></div></div></popper-content><!----></vn-popper-content><!----><!----><!----><!----></vn-menu-item><!----></div><!----></div></div><span class="scroll-adapter__arrow scroll-adapter__arrow--left scroll-adapter__arrow--hidden scroll-adapter__arrow--disabled"><span class="theme-left"></span></span><span class="scroll-adapter__arrow scroll-adapter__arrow--right"><span class="theme-right"></span></span></ms-scroll-adapter><!----><!----><!----></ms-main-items></nav></div><!----><div class="az-menu-container"></div></ms-navigation><!----><!----><ms-sub-navigation><!----><!----></ms-sub-navigation><!----><!----><!----></vn-dynamic-layout-multi-slot>
-
                         wait_time35 = random.randint(3,5)
                         time.sleep(wait_time35)                        
 
@@ -2236,59 +2063,6 @@ def parseSites(driver, input_sports, input_competitions ):
                             
                             any_errors = False
                             print("Error  caught in your BetMGM parse func. block ..... :( ")
-                            #continue 
-
-                        # if sports_list:    
-
-                        #     for index, sports in enumerate(sports_list):
-
-                        #         if 'soccer' in sports.text.lower():
-                        #             #time.sleep(wait_time12)
-                        #             element_str = '//*[@id="main-view"]/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[' + str(index + 1) + ']/a'
-                        #             #print('formed string = ->' + element_str + '<-')
-                        #             #enter_next_page = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, element_str)))
-                        #             web_pg_soccer
-                        #             web_pg_soccer = enter_next_page.get_attribute('href')
-                        #             time.sleep(wait_time12)
-                        #             driver.get(web_pg_soccer)
-                        #             time.sleep(3)
-                        #             #click_element =  g
-                        #             #enter_next_page.click()
-                        #             break
-
-                        #     time.sleep(wait_time12)
-                        # time.sleep(wait_time12)
-
-                        # driver.implicitly_wait(7)
-
-                        # try:
-                        #     outer_sports_picker_elemt_1 = driver.find_element_by_xpath("//*[contains(@class, 'row sport-lobby widget-layout ng-star-inserted')]")
-                        # except:
-                        #     any_errors = False
-                        #     print("Error  caught in your BetMGM parse func. block ..... :( ")
-                        #     #continue 
-
-                        # check_alls_well  = 1    
-                        # proxies = req_proxy.get_proxy_list()
-                        # ## TEST
-                        # proxies = proxies[:51]
-                        # PROXY_COUNTER = random.randint(1, len(proxies))
-                        # proxies = req_proxy.get_proxy_list()
-
-                        # if PROXY_COUNTER == len(proxies) - 1:
-                        #     proxies = req_proxy.get_proxy_list()
-
-                        # PROXY = proxies[PROXY_COUNTER].get_address()
-                        # webdriver.DesiredCapabilities.CHROME['proxy']={
-                        #     "httpProxy":PROXY,
-                        #     "ftpProxy":PROXY,
-                        #     "sslProxy":PROXY,
-                        #     "proxyType":"MANUAL",
-                        # }
-                        # driver_1 = webdriver.Chrome(options=options, executable_path=DRIVER_PATH)
-
-                        # PROXY_COUNTER += 1
-                        # driver_1.get(web_pg_soccer)
 
                         #WebDriverWait(driver, 6).until(EC.presence_of_element_located((By.XPATH, '/html/body/vn-app/vn-dynamic-layout-single-slot[4]/vn-main/main/div/ms-main/ng-scrollbar/div/div/div/div/ms-main-column/div/ms-widget-layout/ms-widget-slot[2]/ms-top-items-widget/ms-promo-item[5]/a')))
 
@@ -2526,7 +2300,7 @@ if __name__ == '__main__':
     if not sports_n_competetitons_list : # or other issues like no recognized or supprted sports then choose default (soccer and MLS only)
         sports_n_competetitons_list = ['soccer, MLS']
         #         sports_n_competetitons['soccer'] = ['MLS']
-    else:
+    else:  
         if sports_n_competetitons_list[-1] == '':
             sports_n_competetitons_list = sports_n_competetitons_list[:-1]
         for item in sports_n_competetitons_list:
